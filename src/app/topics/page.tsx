@@ -2,16 +2,19 @@ import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 import TopicMapButton from "@/components/TopicMapButton";
+import StartQuizButton from "@/components/StartQuizButton";
+import { computeGaps } from "@/lib/gaps";
 import Link from "next/link";
 
 export default async function TopicsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: topics } = await supabase
-    .from("topics")
-    .select("id,name,description,chunks(count)")
-    .order("position");
+  const [{ data: topics }, { gaps }] = await Promise.all([
+    supabase.from("topics").select("id,name,description,chunks(count)").order("position"),
+    computeGaps(supabase),
+  ]);
   const count = (rel: unknown) => (rel as { count: number }[])?.[0]?.count ?? 0;
+  const weakCount = gaps.filter((g) => g.status === "weak" || g.status === "medium").length;
 
   return (
     <main className="app-shell">
@@ -59,6 +62,15 @@ export default async function TopicsPage() {
             })}
           </ul>
         )}
+      </section>
+
+      <section className="section-card quiz-launch-panel">
+        <div>
+          <p className="section-kicker">Put your knowledge to the test</p>
+          <h2 className="section-title">Ready for a diagnostic?</h2>
+          <p className="section-description">Generate questions from your study notes, review the cited explanations, and use the results to find your next focus area.</p>
+        </div>
+        <StartQuizButton disabled={!topics?.length} weakCount={weakCount} />
       </section>
 
       <section className="materials-note">
