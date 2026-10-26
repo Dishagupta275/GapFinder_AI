@@ -1639,3 +1639,29 @@ h1, h2, h3,
   .login-flow-arrow { transform: rotate(0); line-height: 1; }
   .login-preview-foot { align-items: flex-start; line-height: 1.5; }
 }
+
+
+/* Keep controls and focus states in the same botanical palette as the brand. */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, summary:focus-visible {
+  outline-color: rgba(77, 112, 77, .38);
+}
+.btn-primary {
+  background: #3b6146;
+  box-shadow: 0 5px 14px rgba(49, 78, 57, .13);
+}
+.btn-primary:hover:not(:disabled) { background: #2c4b36; }
+.btn-secondary { border-color: #e3e0d6; }
+.btn-secondary:hover:not(:disabled) { border-color: #c9d4c2; background: #fbfbf5; }
+.form-control:focus { border-color: #88a184; box-shadow: 0 0 0 3px rgba(93, 128, 92, .12); }
+.btn-quiet:hover:not(:disabled) { background: #edf1e8; color: #304d3d; }
+.nav-more-menu { isolation: isolate; }
+@media (max-width: 760px) {
+  .app-header .header-nav { overflow: visible; flex-wrap: wrap; }
+  .nav-more-menu { right: 0; }
+}
+@media (max-width: 500px) {
+  .app-header .header-nav { gap: 2px; }
+  .app-header .header-nav > a, .nav-more > summary { padding-inline: 9px; font-size: .72rem; }
+  .nav-more-menu { right: -20px; }
+}
