@@ -1938,3 +1938,64 @@ textarea:focus-visible, summary:focus-visible {
 .feedback-panel { background: #f4f8f6; }
 .feedback-panel.correct { border-color: #bce2d0; background: #e9f7ef; color: #216c4d; }
 .feedback-panel.incorrect { border-color: #f0c8bc; background: #fff0eb; color: #a44337; }
+
+
+/* Ambient motion: soft teal and coral light, kept behind the content. */
+body {
+  position: relative;
+  isolation: isolate;
+}
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  display: block;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+body::before {
+  width: min(42vw, 560px);
+  height: min(42vw, 560px);
+  top: -14rem;
+  left: -12rem;
+  background: radial-gradient(circle, rgba(115, 199, 180, .18) 0%, rgba(166, 220, 207, .09) 38%, transparent 72%);
+  animation: gapfinder-drift-teal 29s ease-in-out infinite alternate;
+}
+body::after {
+  width: min(38vw, 500px);
+  height: min(38vw, 500px);
+  right: -12rem;
+  bottom: -15rem;
+  background: radial-gradient(circle, rgba(229, 124, 99, .13) 0%, rgba(239, 169, 144, .065) 40%, transparent 73%);
+  animation: gapfinder-drift-coral 34s ease-in-out infinite alternate;
+}
+@keyframes gapfinder-drift-teal {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(7vw, 5vh, 0) scale(1.06); }
+  100% { transform: translate3d(3vw, 12vh, 0) scale(.97); }
+}
+@keyframes gapfinder-drift-coral {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-5vw, -7vh, 0) scale(1.04); }
+  100% { transform: translate3d(-9vw, -3vh, 0) scale(.96); }
+}
+
+/* A restrained shimmer on the main study panel adds depth without constant motion everywhere. */
+.home-path-card {
+  background-size: 150% 150%;
+  animation: gapfinder-panel-glow 18s ease-in-out infinite alternate;
+}
+@keyframes gapfinder-panel-glow {
+  0% { background-position: 0% 25%; }
+  100% { background-position: 100% 75%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .home-path-card {
+    animation: none !important;
+    will-change: auto;
+  }
+}
