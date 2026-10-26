@@ -27,6 +27,8 @@ GapFinder AI is an AI-assisted study companion that identifies learning gaps usi
 - [Limitations](#limitations)
 - [Troubleshooting](#troubleshooting)
 - [Roadmap](#roadmap)
+- [Technical architecture](docs/ARCHITECTURE.md)
+- [Development guide](docs/DEVELOPMENT.md)
 
 ## Why GapFinder AI?
 
@@ -412,6 +414,13 @@ Potential next steps include:
 - Improve chunking with heading-aware boundaries and optional reranking.
 - Add spaced-repetition reminders and class-level analytics.
 - Expand language and subject support.
+
+## Developer documentation
+
+For deeper implementation details, continue with the companion guides:
+
+- [Architecture and RAG design](docs/ARCHITECTURE.md) — ingestion, retrieval, quiz generation, gap scoring, revision planning, data model, and security boundaries.
+- [Local development and testing](docs/DEVELOPMENT.md) — setup, environment configuration, smoke-test checklist, troubleshooting, and contribution workflow.
 
 ## Contributing
 
