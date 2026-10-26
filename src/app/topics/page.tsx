@@ -64,7 +64,7 @@ export default async function TopicsPage() {
         )}
       </section>
 
-      <section className="section-card quiz-launch-panel">
+      <section id="diagnostic" className="section-card quiz-launch-panel">
         <div>
           <p className="section-kicker">Put your knowledge to the test</p>
           <h2 className="section-title">Ready for a diagnostic?</h2>
