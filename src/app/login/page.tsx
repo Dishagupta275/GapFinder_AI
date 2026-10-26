@@ -51,13 +51,13 @@ export default function LoginPage() {
             <div className="login-feature"><span className="login-feature-dot" aria-hidden="true">✓</span><span>Personalised revision with cited explanations</span></div>
           </div>
         </div>
-        <p className="small-copy" style={{ color: "#c7d2fe" }}>Find what you don't know you don't know.</p>
+        <p className="small-copy" style={{ color: "#c7d2fe" }}>Find what you don&apos;t know you don&apos;t know.</p>
       </section>
 
       <section className="login-form-side">
         <div className="login-card">
           <p className="section-kicker">Welcome to GapFinder AI</p>
-          <h2 className="login-card-title">Let's get studying.</h2>
+          <h2 className="login-card-title">Let&apos;s get studying.</h2>
           <p className="login-card-copy">Sign in to continue to your learning dashboard, or create an account to get started.</p>
 
           <div className="demo-box">
