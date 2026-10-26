@@ -86,42 +86,52 @@ export async function embedTexts(
 
 export const GEN_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 
+const FALLBACKS = ["gemini-flash-latest", "gemini-flash-lite-latest"];
+
 export async function generateJSON<T>(
   prompt: string,
   schema: Record<string, unknown>
 ): Promise<T> {
-  let attempt = 0;
-  while (true) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEN_MODEL}:generateContent`,
-      {
-        method: "POST",
-        signal: AbortSignal.timeout(40000),
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-            responseSchema: schema,
-          },
-        }),
+  const models = Array.from(new Set([GEN_MODEL, ...FALLBACKS]));
+  let lastErr = "Generation failed";
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: "POST",
+            signal: AbortSignal.timeout(20000),
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
+            },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.2,
+                responseMimeType: "application/json",
+                responseSchema: schema,
+              },
+            }),
+          }
+        );
+        if (res.ok) {
+          const j = await res.json();
+          const text = j.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return JSON.parse(text) as T;
+          lastErr = "Empty response from model";
+          continue;
+        }
+        const body = await res.text();
+        lastErr = `Generation failed (${model}): ${res.status} ${body.slice(0, 200)}`;
+        if (res.status === 404 || res.status === 400) break; // try the next model
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      } catch (e) {
+        lastErr = (e as Error).message;
       }
-    );
-    if (res.ok) {
-      const j = await res.json();
-      const text = j.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error("Empty response from model");
-      return JSON.parse(text) as T;
     }
-    if ((res.status === 429 || res.status >= 500) && attempt < 3) {
-      await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt));
-      attempt++;
-      continue;
-    }
-    throw new Error(`Generation failed: ${res.status} ${await res.text()}`);
   }
+  throw new Error(lastErr);
 }

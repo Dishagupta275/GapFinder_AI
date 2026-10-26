@@ -97,8 +97,9 @@ ${blocks.join("\n\n")}`;
   }));
   let d = 0;
   let free = cap;
-  alloc.forEach((a, i) => {
+    alloc.forEach((a, i) => {
     let left = a.minutes;
+    let first = true;
     const sources = Array.from(new Set((mats[i].data ?? []).map((c) => c.section_label)));
     while (left > 0 && d < nDays) {
       const m = Math.min(left, free);
@@ -106,10 +107,13 @@ ${blocks.join("\n\n")}`;
         days[d].sessions.push({
           topic: a.g.name,
           minutes: m,
-          focus: focusById.get(a.g.id) ?? "Review this topic in your notes and redo the questions you missed.",
+          focus: first
+            ? focusById.get(a.g.id) ?? "Review this topic in your notes and redo the questions you missed."
+            : "Continue: re-read the source material and retry the questions you missed.",
           status: a.g.status,
           sources,
         });
+        first = false;
         left -= m;
         free -= m;
       }

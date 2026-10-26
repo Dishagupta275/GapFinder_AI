@@ -58,9 +58,9 @@ export async function POST() {
   let k = 0;
   topics.forEach((t, i) => {
     const hits = (results[i].data ?? []) as Hit[];
-    if (!hits.length) return;
     const notes = hits.filter((h) => h.kind !== "syllabus");
-    const use = (notes.length ? notes : hits).slice(0, 3);
+    if (!notes.length) return; // no notes for this topic: skip it
+    const use = notes.slice(0, 3);
     const lines = use.map((h) => {
       const ref = `c${++k}`;
       ctx.push({ ref, chunkId: h.id, topicId: t.id });
@@ -70,7 +70,7 @@ export async function POST() {
   });
   if (!ctx.length)
     return NextResponse.json(
-      { error: "No material is linked to your topics yet. Upload notes first." },
+      { error: "No notes are linked to your topics yet. Upload notes first." },
       { status: 400 }
     );
 
@@ -80,6 +80,7 @@ export async function POST() {
 Rules:
 - For each TOPIC write up to ${perTopic} multiple-choice questions.
 - Every question must be answerable from ONE excerpt. Set chunk_ref to that excerpt's tag (for example "c3"). Never use outside knowledge.
+- Test understanding of the subject itself. Never ask about the syllabus, units or document structure.
 - If the excerpts for a topic cannot support a good question, write fewer for it.
 - Exactly 4 options, exactly one correct. Wrong options must be plausible. correct_index is 0 to 3.
 - explanation: 1-2 sentences on why the correct answer is right and what the tempting wrong choice gets wrong, based on the excerpt.

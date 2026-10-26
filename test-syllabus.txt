@@ -1,7 +1,43 @@
-Normalization is the process of organizing a database to reduce redundancy and improve integrity. First Normal Form (1NF) requires that every column holds atomic values and there are no repeating groups. Second Normal Form (2NF) requires 1NF and that every non-key attribute depends on the whole primary key, removing partial dependencies. Third Normal Form (3NF) requires 2NF and that no non-key attribute depends on another non-key attribute, removing transitive dependencies.
+DBMS Notes
 
-Transactions follow the ACID properties. Atomicity means a transaction either completes fully or not at all. Consistency means a transaction moves the database from one valid state to another. Isolation means concurrent transactions do not interfere with each other. Durability means committed changes survive system failures.
+UNIT 1: INTRODUCTION TO DATABASES
 
-A deadlock occurs when two transactions each hold a lock the other needs, so neither can proceed. Two-phase locking has a growing phase where locks are acquired and a shrinking phase where locks are released, and it guarantees serializability.
+A database is an organized collection of related data. A Database Management System (DBMS) is software that lets users define, create, query, update and administer databases. Compared with file systems, a DBMS reduces data redundancy, avoids inconsistency, supports concurrent access, enforces integrity constraints and provides security and backup.
 
-SQL joins combine rows from two tables. An INNER JOIN returns only rows with matching values in both tables. A LEFT JOIN returns all rows from the left table and the matching rows from the right, with NULL where there is no match.
+The three-schema architecture separates a database into three levels. The internal level describes how data is physically stored. The conceptual level describes the whole database structure for all users: entities, attributes, relationships and constraints. The external level (views) describes the part of the database that a particular user group sees. Physical data independence means the internal level can change without changing the conceptual schema. Logical data independence means the conceptual schema can change without changing external views.
+
+A data model is a collection of concepts for describing data. Common models are the hierarchical, network, relational and object-oriented models. The relational model is the most widely used today.
+
+An Entity-Relationship (ER) diagram models entities, attributes and relationships. An entity is a real-world object, such as Student or Course. A weak entity has no key of its own and depends on a strong owner entity through an identifying relationship. Cardinality constraints describe how many entities participate in a relationship: one-to-one, one-to-many and many-to-many. A many-to-many relationship is converted into a separate table whose primary key combines the keys of both participating entities. The schema is the logical design of the database, and an instance is the data stored at a given moment.
+
+UNIT 2: RELATIONAL MODEL AND SQL
+
+In the relational model, data is stored in relations (tables). A row is called a tuple, a column is called an attribute, and the set of allowed values for an attribute is its domain. The degree of a relation is its number of attributes, and its cardinality is its number of tuples.
+
+A superkey is any set of attributes that uniquely identifies a tuple. A candidate key is a minimal superkey. The primary key is the candidate key chosen to identify tuples, and it cannot be NULL. A foreign key is an attribute in one table that refers to the primary key of another table. Entity integrity states that no primary key value can be NULL. Referential integrity states that every foreign key value must either match an existing primary key value in the referenced table or be NULL.
+
+Relational algebra is a procedural query language. Selection (sigma) chooses rows that satisfy a condition. Projection (pi) chooses columns and removes duplicates. Union, intersection and set difference need union-compatible relations. The Cartesian product combines every row of one relation with every row of another. A join combines related rows based on a condition, and a natural join matches on all attributes with the same name.
+
+SQL is the standard query language. DDL commands such as CREATE, ALTER and DROP define structure. DML commands such as INSERT, UPDATE and DELETE change data. SELECT retrieves data, with WHERE filtering rows, GROUP BY grouping rows and HAVING filtering groups after aggregation. The aggregate functions are COUNT, SUM, AVG, MIN and MAX. WHERE cannot use aggregate functions, but HAVING can.
+
+An INNER JOIN returns only matching rows from both tables. A LEFT OUTER JOIN returns all rows from the left table and matching rows from the right, with NULL where there is no match. A subquery is a query nested inside another query. A correlated subquery refers to columns of the outer query and runs once per outer row. A view is a virtual table defined by a stored SELECT query. It stores no data of its own and simplifies queries and restricts access.
+
+UNIT 3: NORMALIZATION
+
+Normalization organizes tables to reduce redundancy and avoid update, insertion and deletion anomalies. A functional dependency X -> Y means that if two tuples have the same value for X, they must have the same value for Y. Armstrong's axioms are reflexivity, augmentation and transitivity. The closure of an attribute set X is the set of all attributes that X determines, and it is used to find candidate keys.
+
+First Normal Form (1NF) requires that every attribute holds only atomic values, with no repeating groups or multivalued attributes. Second Normal Form (2NF) requires 1NF and that no non-prime attribute is partially dependent on a part of a composite candidate key. A partial dependency can only occur when the candidate key is composite. Third Normal Form (3NF) requires 2NF and no transitive dependency of a non-prime attribute on the key. For every functional dependency X -> Y, either X is a superkey or Y is a prime attribute.
+
+Boyce-Codd Normal Form (BCNF) is stricter than 3NF. For every functional dependency X -> Y, X must be a superkey. Every BCNF relation is in 3NF, but not every 3NF relation is in BCNF. Decomposition into BCNF is always lossless, but it may not preserve all dependencies. A decomposition is lossless if joining the decomposed tables gives back exactly the original table, with no spurious tuples. A decomposition is dependency preserving if every original functional dependency can be checked in the decomposed tables without joining them. 3NF decomposition can always be both lossless and dependency preserving.
+
+UNIT 4: TRANSACTIONS AND CONCURRENCY
+
+A transaction is a logical unit of work made of one or more operations that must run as a whole. The ACID properties are Atomicity (all operations happen or none do), Consistency (a transaction moves the database from one valid state to another), Isolation (concurrent transactions do not interfere with each other) and Durability (committed changes survive failures). The transaction states are active, partially committed, committed, failed and aborted.
+
+When transactions run concurrently without control, problems occur. A lost update happens when two transactions overwrite each other's changes. A dirty read happens when a transaction reads data written by another transaction that has not committed. A non-repeatable read happens when the same row gives different values when read twice in one transaction. A phantom read happens when a repeated query returns new rows inserted by another transaction.
+
+A schedule is serializable if its result equals that of some serial schedule. A schedule is conflict serializable if it can be turned into a serial schedule by swapping non-conflicting operations. Two operations conflict if they belong to different transactions, access the same data item, and at least one of them is a write. Conflict serializability is tested with a precedence graph: the schedule is conflict serializable if and only if the graph has no cycle.
+
+Locking controls concurrent access. A shared lock allows reading, and an exclusive lock allows reading and writing. Two-phase locking (2PL) has a growing phase, where locks are acquired, and a shrinking phase, where locks are released. Once a transaction releases a lock it cannot acquire new ones. 2PL guarantees conflict serializability but does not prevent deadlock. Strict 2PL holds all exclusive locks until the transaction commits or aborts, which avoids cascading rollbacks.
+
+A deadlock occurs when two or more transactions wait for each other forever. It can be detected with a wait-for graph, where a cycle means deadlock. It can be prevented with timestamp schemes such as wait-die and wound-wait, and resolved by aborting a victim transaction. Recovery uses a log. Write-ahead logging requires that log records reach stable storage before the changed data pages do. After a crash, committed transactions are redone and uncommitted transactions are undone. A checkpoint reduces the amount of log that must be scanned during recovery.
