@@ -20,16 +20,16 @@ export default function DeleteDocButton({ id, title }: { id: string; title: stri
   }
 
   return (
-    <span className="flex items-center gap-2">
+    <span className="document-actions">
       <button
         type="button"
         onClick={remove}
         disabled={loading}
-        className="border border-red-600 text-red-700 rounded px-2 py-0.5 text-xs hover:bg-red-50 disabled:opacity-50"
+        className="btn btn-danger"
       >
-        {loading ? "Deleting..." : "Delete"}
+        {loading ? "Deleting…" : "Delete"}
       </button>
-      {err && <span className="text-xs text-red-600">{err}</span>}
+      {err && <span role="alert" className="status-message status-error">{err}</span>}
     </span>
   );
 }
