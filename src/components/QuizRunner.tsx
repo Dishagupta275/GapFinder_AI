@@ -40,72 +40,83 @@ export default function QuizRunner({ quizId, questions }: { quizId: string; ques
   const score = results ? Object.values(results).filter((r) => r.correct).length : 0;
 
   return (
-    <div className="space-y-5">
+    <div className="quiz-stack">
       {results && (
-        <div className="bg-white rounded-xl shadow p-5">
-          <p className="text-lg font-semibold">
-            Score: {score} / {questions.length}
-          </p>
-          <Link href="/" className="text-sm underline">
-            Back to home
-          </Link>
-        </div>
+        <section className="quiz-card">
+          <p className="section-kicker">Diagnostic results</p>
+          <p className="page-title">You scored {score} / {questions.length}</p>
+          <p className="page-description">Review the answers, explanations, and source citations below.</p>
+          <div className="quiz-footer" style={{ marginTop: 16 }}>
+            <span className="quiz-progress-copy">{questions.length ? Math.round((score / questions.length) * 100) : 0}% correct</span>
+            <Link href="/" className="btn btn-primary">Back to dashboard</Link>
+          </div>
+        </section>
       )}
 
       {questions.map((q, qi) => {
         const r = results?.[q.id];
         return (
-          <div key={q.id} className="bg-white rounded-xl shadow p-5 space-y-3">
-            <p className="text-xs text-gray-500">{q.topic}</p>
-            <p className="font-medium">
-              {qi + 1}. {q.question}
-            </p>
-            <div className="space-y-2">
+          <article key={q.id} className="quiz-card">
+            <div className="quiz-card-head">
+              <div>
+                <p className="quiz-number">Question {qi + 1} of {questions.length}</p>
+                {q.topic && <span className="quiz-topic">{q.topic}</span>}
+              </div>
+              {r && <span className={`status-pill ${r.correct ? "strong" : "weak"}`}>{r.correct ? "Correct" : "Review"}</span>}
+            </div>
+            <p className="quiz-question">{q.question}</p>
+            <div className="option-list">
               {q.options.map((opt, oi) => {
-                let style = "border";
+                let style = "option-card";
                 if (r) {
-                  if (oi === r.correct_index) style = "border-green-600 bg-green-50";
-                  else if (oi === sel[q.id]) style = "border-red-600 bg-red-50";
+                  if (oi === r.correct_index) style += " is-correct";
+                  else if (oi === sel[q.id]) style += " is-incorrect";
+                  else style += " is-locked";
+                } else if (sel[q.id] === oi) {
+                  style += " is-selected";
                 }
                 return (
-                  <label
-                    key={oi}
-                    className={`flex items-center gap-2 rounded px-3 py-2 text-sm cursor-pointer ${style}`}
-                  >
+                  <label key={oi} className={style}>
                     <input
+                      className="sr-only"
                       type="radio"
                       name={q.id}
                       disabled={!!results}
                       checked={sel[q.id] === oi}
                       onChange={() => setSel((s) => ({ ...s, [q.id]: oi }))}
                     />
-                    {opt}
+                    <span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + oi)}</span>
+                    <span>{opt}</span>
                   </label>
                 );
               })}
             </div>
             {r && (
-              <div className="text-sm space-y-1">
-                <p className={r.correct ? "text-green-700" : "text-red-700"}>
-                  {r.correct ? "Correct." : "Incorrect."} {r.explanation}
-                </p>
-                <p className="text-gray-500">Source: {r.citation}</p>
+              <div className={`feedback-panel ${r.correct ? "correct" : "incorrect"}`}>
+                <p className="font-bold m-0">{r.correct ? "Correct answer" : "Not quite"}</p>
+                <p className="m-0 mt-1">{r.explanation}</p>
+                <p className="source-label mt-2">Source: {r.citation || q.citation}</p>
               </div>
             )}
-          </div>
+          </article>
         );
       })}
 
       {!results && (
-        <div className="space-y-2">
-          <button
-            onClick={submit}
-            disabled={!done || loading}
-            className="bg-black text-white rounded px-5 py-2 disabled:opacity-50"
-          >
-            {loading ? "Checking..." : "Submit answers"}
-          </button>
-          {err && <p className="text-sm text-red-600">{err}</p>}
+        <div className="quiz-card">
+          <div className="quiz-footer">
+            <span className="quiz-progress-copy">{Object.keys(sel).length} of {questions.length} answered</span>
+            <button
+              onClick={submit}
+              disabled={!done || loading}
+              className="btn btn-primary"
+              type="button"
+            >
+              {loading ? "Checking your answers…" : "Submit answers"}
+            </button>
+          </div>
+          {err && <p role="alert" className="status-message status-error mt-3">{err}</p>}
+          {!done && <p className="small-copy mt-2">Select an answer for each question to submit your attempt.</p>}
         </div>
       )}
     </div>
