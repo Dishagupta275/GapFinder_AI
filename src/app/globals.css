@@ -1162,3 +1162,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .insight-summary-card > strong { font-size: 1.7rem; }
   .insight-footnote p { align-items: flex-start; }
 }
+
+
+.quiz-launch-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin-top: 17px;
+  background: #f5f5ec;
+}
+.quiz-launch-panel > div:first-child { max-width: 650px; }
+.quiz-launch-panel .form-stack { min-width: 240px; }
+.quiz-launch-panel .form-actions { justify-content: flex-end; }
+@media (max-width: 760px) {
+  .quiz-launch-panel { align-items: flex-start; flex-direction: column; }
+  .quiz-launch-panel .form-stack { width: 100%; min-width: 0; }
+  .quiz-launch-panel .form-actions { justify-content: flex-start; }
+}
