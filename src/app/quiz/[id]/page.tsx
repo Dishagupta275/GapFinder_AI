@@ -41,19 +41,23 @@ export default async function QuizPage({ params }: { params: Promise<{ id: strin
   }));
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-5">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Diagnostic quiz</h1>
-        <Link href="/" className="text-sm underline">
-          Back to home
-        </Link>
+    <main className="page-shell">
+      <Link href="/" className="page-back-link"><span aria-hidden="true">←</span> Back to dashboard</Link>
+      <header className="page-intro">
+        <p className="section-kicker">Knowledge check</p>
+        <h1 className="page-title">Diagnostic quiz</h1>
+        <p className="page-description">
+          Choose the best answer for each question. Once submitted, you can review explanations and the source material behind them.
+        </p>
       </header>
       {count ? (
-        <div className="bg-white rounded-xl shadow p-5 space-y-2">
-          <p className="text-sm">This quiz was already submitted.</p>
-          <Link href="/" className="text-sm underline">
-            See your gap report on the home page
-          </Link>
+        <div className="quiz-card">
+          <span className="status-pill untested">Already submitted</span>
+          <h2 className="section-title mt-4">This quiz has been completed.</h2>
+          <p className="page-description">Your attempt is saved. Return to the dashboard to review your gap report and study plan.</p>
+          <div className="hero-actions">
+            <Link href="/" className="btn btn-primary">View gap report</Link>
+          </div>
         </div>
       ) : (
         <QuizRunner quizId={id} questions={questions} />
