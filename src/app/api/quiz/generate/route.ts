@@ -76,7 +76,7 @@ export async function POST() {
 
   // ---- GENERATION: model only sees retrieved text ----
   const perTopic = Math.min(3, Math.max(1, Math.floor(20 / blocks.length)));
-  const prompt = `You write diagnostic quiz questions for a student using ONLY the study material below.
+  const quizPrompt = `You write diagnostic quiz questions for a student using ONLY the study material below.
 Rules:
 - For each TOPIC write up to ${perTopic} multiple-choice questions.
 - Every question must be answerable from ONE excerpt. Set chunk_ref to that excerpt's tag (for example "c3"). Never use outside knowledge.
@@ -91,7 +91,7 @@ ${blocks.join("\n\n")}`;
 
   let out: Gen;
   try {
-    out = await generateJSON<Gen>(prompt, {
+    out = await generateJSON<Gen>(quizPrompt, {
       type: "OBJECT",
       properties: {
         questions: {

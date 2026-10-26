@@ -64,8 +64,7 @@ ${m.map((c) => `(${c.section_label}) ${c.content.slice(0, 600)}`).join("\n") || 
   });
 
   const prompt = `You are building a revision plan. For EACH topic below write "focus": 2-3 short, concrete study actions in one string.
-Rules: use ONLY the material given; target the concepts in the missed questions; for strong topics suggest a quick recap only. Return one item per topic using its exact topic_id.
-
+Rules: for each topic use ONLY that topic's own Material and Missed questions. Never mention concepts from any other topic. Target the concepts in the missed questions. For strong topics suggest a quick recap only. Return one item per topic using its exact topic_id.
 ${blocks.join("\n\n")}`;
 
   const focusById = new Map<string, string>();

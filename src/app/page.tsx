@@ -4,6 +4,7 @@ import UploadForm from "@/components/UploadForm";
 import TopicMapButton from "@/components/TopicMapButton";
 import StartQuizButton from "@/components/StartQuizButton";
 import PlanForm from "@/components/PlanForm";
+import DeleteDocButton from "@/components/DeleteDocButton";
 
 const badge: Record<string, string> = {
   weak: "bg-red-100 text-red-800",
@@ -59,11 +60,14 @@ export default async function Home() {
         {!docs?.length && <p className="text-sm text-gray-500">Nothing uploaded yet.</p>}
         <ul className="divide-y">
           {docs?.map((d) => (
-            <li key={d.id} className="py-2 flex justify-between text-sm">
+            <li key={d.id} className="py-2 flex items-center justify-between gap-3 text-sm">
               <span>
                 {d.title} <span className="text-gray-500">({d.kind})</span>
               </span>
-              <span className="text-gray-500">{count(d.chunks)} chunks</span>
+              <span className="flex items-center gap-3">
+                <span className="text-gray-500">{count(d.chunks)} chunks</span>
+                <DeleteDocButton id={d.id} title={d.title} />
+              </span>
             </li>
           ))}
         </ul>
