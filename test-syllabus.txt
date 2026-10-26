@@ -1,0 +1,7 @@
+Normalization is the process of organizing a database to reduce redundancy and improve integrity. First Normal Form (1NF) requires that every column holds atomic values and there are no repeating groups. Second Normal Form (2NF) requires 1NF and that every non-key attribute depends on the whole primary key, removing partial dependencies. Third Normal Form (3NF) requires 2NF and that no non-key attribute depends on another non-key attribute, removing transitive dependencies.
+
+Transactions follow the ACID properties. Atomicity means a transaction either completes fully or not at all. Consistency means a transaction moves the database from one valid state to another. Isolation means concurrent transactions do not interfere with each other. Durability means committed changes survive system failures.
+
+A deadlock occurs when two transactions each hold a lock the other needs, so neither can proceed. Two-phase locking has a growing phase where locks are acquired and a shrinking phase where locks are released, and it guarantees serializability.
+
+SQL joins combine rows from two tables. An INNER JOIN returns only rows with matching values in both tables. A LEFT JOIN returns all rows from the left table and the matching rows from the right, with NULL where there is no match.
