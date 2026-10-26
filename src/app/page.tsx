@@ -8,20 +8,6 @@ import DeleteDocButton from "@/components/DeleteDocButton";
 import ExplainBox from "@/components/ExplainBox";
 import ProgressChart from "@/components/ProgressChart";
 
-const badge: Record<string, string> = {
-  weak: "bg-red-100 text-red-800",
-  medium: "bg-amber-100 text-amber-800",
-  strong: "bg-green-100 text-green-800",
-  untested: "bg-gray-100 text-gray-700",
-};
-
-const bar: Record<string, string> = {
-  weak: "bg-red-500",
-  medium: "bg-amber-500",
-  strong: "bg-green-500",
-  untested: "bg-gray-300",
-};
-
 const order: Record<string, number> = { weak: 0, medium: 1, untested: 2, strong: 3 };
 
 type PlanDay = {
