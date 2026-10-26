@@ -20,7 +20,7 @@ export default async function Home() {
     supabase.from("documents").select("id").order("created_at", { ascending: false }),
     supabase.from("topics").select("id").order("position"),
     computeGaps(supabase),
-    supabase.from("plans").select("id").order("created_at", { ascending: false }).limit(1),
+    supabase.from("plans").select("created_at").order("created_at", { ascending: false }).limit(1),
   ]);
 
   const documentCount = docs?.length ?? 0;
