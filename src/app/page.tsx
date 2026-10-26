@@ -82,7 +82,11 @@ export default async function Home() {
         <div className="home-hero-copy">
           <p className="hero-eyebrow"><span className="eyebrow-mark" aria-hidden="true"></span> A study space built around your own material</p>
           <h1 className="hero-title">Know what to study next.<br /><span>Make every session count.</span></h1>
-          <p className="hero-description">{nextCopy}</p>
+          <div className="home-next-focus">
+            <p className="home-next-label">{nextLabel}</p>
+            <h2 className="home-next-title">{nextTitle}</h2>
+            <p className="home-next-copy">{nextCopy}</p>
+          </div>
           <div className="hero-actions">
             <Link className="btn btn-primary home-primary-action" href={nextHref}>{nextAction}<span aria-hidden="true"> ↗</span></Link>
             <Link className="btn btn-secondary" href="/explain">Ask about a topic</Link>
