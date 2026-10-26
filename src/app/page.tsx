@@ -234,7 +234,7 @@ export default async function Home() {
           <section id="diagnostic" className="section-card">
             <div className="section-head">
               <div className="section-head-main">
-                <p className="section-kicker">Step 03 · Check your understanding</p>
+                <p className="section-kicker">Assess your understanding</p>
                 <h2 className="section-title">Diagnostic quiz</h2>
                 <p className="section-description">
                   Answer questions generated from your notes. Review explanations and source citations after submission.
