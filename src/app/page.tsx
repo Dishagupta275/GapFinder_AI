@@ -67,8 +67,9 @@ function UploadGlyph() {
 function SparkGlyph() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7z" />
-      <path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" />
+      <path d="M3.5 5.5c3.2-1.2 6-.5 8.5 1.6v12c-2.5-2.1-5.3-2.8-8.5-1.6z" />
+      <path d="M20.5 5.5c-3.2-1.2-6-.5-8.5 1.6v12c2.5-2.1 5.3-2.8 8.5-1.6z" />
+      <path d="M6.5 9h2.8M6.5 12h2.8M14.7 9h2.8M14.7 12h2.8" />
     </svg>
   );
 }
@@ -130,17 +131,63 @@ export default async function Home() {
       </header>
 
       <section className="hero-banner">
-        <div className="hero-content">
-          <p className="hero-eyebrow">Your learning, made clearer</p>
-          <h1 className="hero-title">Find the gaps.<br />Close them with a plan.</h1>
-          <p className="hero-description">
-            Learn from your own syllabus and notes. Map your topics, find what needs more
-            attention, and turn your next study session into a focused plan.
-          </p>
-          <div className="hero-actions">
-            <a className="btn btn-primary" href="#materials">Add study material <span aria-hidden="true">↗</span></a>
-            <a className="btn btn-secondary" href="#diagnostic">Start a diagnostic quiz</a>
+        <div className="hero-layout">
+          <div className="hero-content">
+            <p className="hero-eyebrow"><span className="eyebrow-mark" aria-hidden="true"></span> A more thoughtful way to study</p>
+            <h1 className="hero-title">Study what matters.<br /><span>Make progress you can see.</span></h1>
+            <p className="hero-description">
+              Bring your syllabus and notes into one calm workspace. Discover which concepts
+              need another look, practise with purpose, and turn your results into a realistic revision plan.
+            </p>
+            <div className="hero-actions">
+              <a className="btn btn-primary" href="#materials">Add study material <span aria-hidden="true">↗</span></a>
+              <a className="btn btn-secondary" href="#diagnostic">Check my understanding</a>
+            </div>
           </div>
+          <aside className="study-cycle" aria-label="GapFinder study workflow illustration">
+            <div className="study-cycle-heading">
+              <span className="study-cycle-label">THE STUDY CYCLE</span>
+              <span className="study-cycle-caption">A clear path forward</span>
+            </div>
+            <div className="cycle-steps">
+              <div className="cycle-step">
+                <span className="cycle-step-number">01</span>
+                <div className="cycle-step-copy">
+                  <strong>Gather</strong>
+                  <span>Your syllabus &amp; notes</span>
+                </div>
+                <span className="cycle-step-mark" aria-hidden="true">↘</span>
+              </div>
+              <div className="cycle-connector" aria-hidden="true"></div>
+              <div className="cycle-step">
+                <span className="cycle-step-number">02</span>
+                <div className="cycle-step-copy">
+                  <strong>Understand</strong>
+                  <span>Map the key topics</span>
+                </div>
+                <span className="cycle-step-mark" aria-hidden="true">↘</span>
+              </div>
+              <div className="cycle-connector" aria-hidden="true"></div>
+              <div className="cycle-step">
+                <span className="cycle-step-number">03</span>
+                <div className="cycle-step-copy">
+                  <strong>Practise</strong>
+                  <span>Find what needs work</span>
+                </div>
+                <span className="cycle-step-mark" aria-hidden="true">↘</span>
+              </div>
+              <div className="cycle-connector" aria-hidden="true"></div>
+              <div className="cycle-step cycle-step-final">
+                <span className="cycle-step-number">04</span>
+                <div className="cycle-step-copy">
+                  <strong>Revise</strong>
+                  <span>Follow a focused plan</span>
+                </div>
+                <span className="cycle-step-mark" aria-hidden="true">✓</span>
+              </div>
+            </div>
+            <p className="study-cycle-footnote">Less guesswork. More intentional learning.</p>
+          </aside>
         </div>
       </section>
 
