@@ -1680,7 +1680,6 @@ textarea:focus-visible, summary:focus-visible {
   --success: #287b61;
   --warning: #a66b2b;
   --danger: #bd5143;
-  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
 }
 body {
   background:
