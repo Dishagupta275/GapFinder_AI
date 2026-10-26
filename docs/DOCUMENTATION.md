@@ -1,632 +1,394 @@
-# GapFinder AI
-## An AI-Powered Learning Gap Detection and Personalized Revision System
+---
+title: "GapFinder AI"
+subtitle: "Technical Project Documentation"
+author: "GapFinder AI Project Team"
+date: "26 October 2026"
+---
 
-### 1. Project Overview
+**Document type:** Standalone technical documentation  
+**Version:** 1.0  
+**Repository:** <https://github.com/Dishagupta275/GapFinder_AI>  
+**Live demo:** <https://gap-finder-ai-seven.vercel.app>
 
-**GapFinder AI** is an AI-powered learning assistant designed to help students identify knowledge gaps, evaluate their understanding of academic topics, and prepare personalized revision plans using their own study materials.
+# Contents
 
-Traditional study methods often involve repeatedly reviewing entire chapters or solving generic practice questions without knowing which concepts require the most attention. GapFinder AI addresses this problem by analyzing a student's syllabus and notes, generating topic-specific diagnostic questions, evaluating quiz performance, and identifying areas that require further revision.
+1. Document purpose and scope
+2. Executive summary
+3. Problem statement and motivation
+4. Objectives and scope
+5. Users and primary workflow
+6. Functional requirements and features
+7. Technology stack
+8. System architecture
+9. End-to-end processing workflow
+10. Retrieval-augmented generation (RAG) design
+11. Gap-detection and revision-planning logic
+12. Database design
+13. Application modules and code organization
+14. API reference
+15. Local installation and configuration
+16. Deployment and demo guidance
+17. Security, privacy, and reliability
+18. Testing and acceptance criteria
+19. Limitations and risks
+20. Future enhancements
+21. Conclusion and appendix
 
-The system combines artificial intelligence, semantic search, vector embeddings, and a structured database to deliver a personalized learning experience. It uses a Retrieval-Augmented Generation (RAG) approach to ground generated questions and explanations in the student's uploaded learning materials.
+# Document purpose and scope
 
-The application is built using Next.js and TypeScript, with Supabase providing authentication and database services. Google's Gemini models support text embeddings and AI-powered content generation.
+This document explains the purpose, design, data flow, implementation, algorithms, setup, and operational considerations of GapFinder AI. It is intended to be usable independently of the repository README, for project reviews, demonstrations, handoffs, and technical discussions.
 
-**Project goal:** To help students study more efficiently by identifying what they need to learn rather than simply encouraging them to study more.
+The document is based on the current repository documentation and implementation structure available on the `main` branch when prepared. The exact Supabase DDL is not checked into the repository; database fields below describe the logical structure used by the application and must be checked against the configured Supabase project before creating a new environment. Deployment availability and provider model access can change independently of this document.
 
-### 2. Problem Statement
+# 1. Executive summary
 
-Students frequently face difficulties determining whether they have understood all the important concepts in a subject. Conventional revision methods have several limitations:
+GapFinder AI is an AI-assisted study companion that identifies learning gaps using a student's own syllabus and study material. Instead of generating a generic quiz, it creates a topic map from the uploaded syllabus, retrieves related study excerpts, generates source-grounded diagnostic questions, evaluates the student's answers, classifies topic-level performance, and prepares a targeted revision plan.
 
-- Students may spend excessive time revising concepts they already understand.
-- Weak concepts may remain unnoticed until an examination.
-- Generic quizzes may contain questions unrelated to the student's syllabus.
-- Students may struggle to prioritize topics when examination dates approach.
-- Manually analyzing quiz results and preparing a revision timetable can be time-consuming.
-- AI-generated explanations may contain unsupported information if they are not grounded in relevant study material.
+The system combines a Next.js web application, Supabase authentication and PostgreSQL storage, the `pgvector` extension for vector similarity search, and Google Gemini for embeddings and structured text generation. The application preserves source labels for chunks so the learner can trace generated questions and explanations back to uploaded material.
 
-There is a need for an intelligent learning system that can analyze a student's study material, assess topic-level understanding, identify weak areas, and recommend a focused revision strategy.
+## Core value proposition
 
-GapFinder AI addresses these challenges through a personalized, source-grounded learning workflow.
+- **Personalized diagnosis:** highlights topics that need attention instead of presenting only an overall score.
+- **Source-grounded learning:** generates questions and explanations from retrieved material and shows the associated source label.
+- **Actionable revision:** converts quiz results into a day-by-day study plan.
+- **Iterative practice:** supports focused retakes and progress review.
 
-### 3. Objectives
+The app is designed as a study-support tool. A topic status is a heuristic based on quiz answers, not a formal or statistically validated measure of mastery.
 
-The primary objectives of the project are:
+# 2. Problem statement and motivation
 
-1. To provide a platform for uploading and organizing academic study materials.
-2. To extract meaningful topics from an uploaded syllabus.
-3. To generate diagnostic questions based on relevant study notes.
-4. To evaluate student responses and calculate topic-level performance.
-5. To classify topics according to their observed performance.
-6. To generate personalized revision plans based on identified learning gaps.
-7. To provide explanations grounded in uploaded learning materials.
-8. To support focused retakes for topics requiring additional practice.
-9. To track quiz performance across attempts.
-10. To use retrieval-based AI generation to improve the relevance and traceability of generated educational content.
+Students often spend revision time on familiar material because they do not have a reliable view of what they understand and what they have not tested. Generic question banks may also introduce questions that are outside the student's syllabus or use terminology that differs from their notes.
 
-### 4. Proposed Solution
+GapFinder AI addresses these problems by using the learner's own material as the source of a structured diagnostic cycle. The intended result is a more focused decision about **what to revise next**, why it needs attention, and which supporting material to revisit.
 
-GapFinder AI implements an integrated learning workflow.
+# 3. Objectives and scope
 
-First, the student uploads a syllabus and supporting study notes. The application extracts text from these documents, divides it into smaller chunks, and generates vector embeddings. These embeddings allow the application to retrieve relevant passages through semantic similarity search.
+## 3.1 Objectives
 
-The syllabus is analyzed to identify the subject's topics. The student can then generate diagnostic quizzes using relevant passages from the uploaded notes.
+1. Allow an authenticated learner to upload a syllabus, notes, and past papers.
+2. Extract text and index it as searchable chunks with vector embeddings.
+3. Derive a topic map from the syllabus and associate relevant chunks with topics.
+4. Generate diagnostic multiple-choice questions from retrieved study excerpts.
+5. Evaluate submitted answers and calculate a topic-level gap report.
+6. Generate a revision plan that prioritizes weaker or untested topics.
+7. Explain concepts using retrieved material and show citations for supported answers.
+8. Offer focused retakes and an attempt-history view to support iterative practice.
 
-After the student submits the quiz, the application evaluates the answers and calculates topic-level performance. Topics are categorized as strong, medium, weak, or untested according to the available results.
+## 3.2 In scope
 
-Using this information, the system generates a personalized revision plan that prioritizes topics requiring more attention. Students can also request explanations of concepts covered by their uploaded material, take focused retake quizzes, and review their progress.
+- Web-based study workflow using Next.js App Router.
+- Supabase authentication and per-user data persistence.
+- PDF, TXT, and Markdown/text ingestion, subject to text being extractable.
+- Embedding-based retrieval and source references.
+- Diagnostic quizzes, gap classification, revision planning, explanation, retakes, and progress visualization.
 
-The application therefore connects study-material ingestion, topic identification, diagnostic assessment, learning-gap analysis, and revision planning in one system.
+## 3.3 Out of scope in the current implementation
 
-### 5. Technology Stack
+- Optical character recognition (OCR) for image-only/scanned PDFs.
+- A guarantee that every generated statement is factually or semantically entailed by its cited text.
+- Teacher/class administration and institution-wide analytics.
+- A formally validated psychometric assessment model.
+- Automatic guarantees that a revision plan is optimal for a particular exam.
 
-| Technology | Purpose |
-|---|---|
-| Next.js | Application framework, page routing, and server-side API routes |
-| React | Interactive user interface |
-| TypeScript | Type-safe application development |
-| Tailwind CSS | User-interface styling |
-| Supabase Auth | User authentication and session management |
-| Supabase PostgreSQL | Persistent storage of application data |
-| pgvector | Vector storage and similarity-based retrieval |
-| Google Gemini API | AI-powered topic extraction, question generation, explanations, and revision-plan generation |
-| Gemini Embedding Model | Conversion of text and queries into numerical vector representations |
-| unpdf | Text extraction from PDF documents |
-| Vercel | Hosting and deployment of the web application |
+# 4. Users and primary workflow
 
-### 6. System Architecture
+## 4.1 Intended user
 
-The application follows a client-server architecture in which the frontend communicates with Next.js API routes. The backend coordinates authentication, database operations, document processing, retrieval, and AI generation.
+The primary user is a student who wants to diagnose weak areas and revise from their own course material. A shared demonstration account is provided for trying the application; because it is shared, it should not be used for confidential or personal documents.
 
-#### 6.1 Architecture Components
+## 4.2 Typical workflow
 
-**1. Presentation Layer**
-
-The presentation layer provides the interface through which students interact with the application. It includes the dashboard, login interface, document-upload controls, topic map, quiz interface, revision-plan form, explanation interface, retake interface, and progress visualization.
-
-**2. Application Layer**
-
-Next.js route handlers implement the application's backend operations. They process uploaded documents, communicate with AI services, retrieve database records, validate generated content, evaluate quiz submissions, and create revision plans.
-
-**3. Authentication Layer**
-
-Supabase Auth manages user authentication and sessions. Server-side API routes check the authenticated user before performing protected operations.
-
-**4. Database Layer**
-
-Supabase PostgreSQL stores document metadata, extracted text chunks, topic information, quiz questions, submitted answers, and revision plans.
-
-**5. Vector Retrieval Layer**
-
-The pgvector extension stores embeddings and supports semantic similarity search. The database function `match_chunks` retrieves relevant text chunks for a topic or user question.
-
-**6. AI Processing Layer**
-
-Google Gemini models are used to generate structured content from relevant source material. These operations include topic extraction, diagnostic question generation, explanations, and revision-plan generation.
-
-#### 6.2 High-Level Architecture Diagram
-
-```text
-                 STUDENT
-                    |
-                    v
-          Next.js / React UI
-                    |
-                    v
-           Next.js API Routes
-                    |
-          +---------+----------+
-          |         |          |
-          v         v          v
-     Supabase    Gemini AI   Document
-       Auth        API       Processing
-          |         |          |
-          |         v          |
-          |    Text Generation |
-          |    and Embeddings  |
-          |         |          |
-          +---------+----------+
-                    |
-                    v
-           Supabase PostgreSQL
-                    |
-                    v
-             pgvector Search
-                    |
-                    v
-          Relevant Study Material
-                    |
-                    v
-       Questions, Explanations,
-       Gap Reports and Study Plans
-```
-
-### 7. Core Modules
-
-#### 7.1 User Authentication
-
-The application uses Supabase Auth to manage user sessions.
-
-Authentication is important because uploaded documents, topics, quizzes, and study plans belong to individual users.
-
-Protected API operations check the authenticated session before accessing user-specific information. Database Row Level Security (RLS) policies must also be configured correctly to enforce data isolation.
-
-#### 7.2 Document Upload and Processing
-
-The document-processing module allows students to upload academic materials under different categories:
-
-- **Syllabus:** Defines the topics and concepts to be studied.
-- **Notes:** Provides the learning material used for question generation and explanations.
-- **Past papers:** Provides additional examination-related reference material.
-
-The current application supports PDF, TXT, and Markdown/text files. The upload endpoint enforces a 10 MB file-size limit.
-
-The processing workflow consists of the following steps:
-
-1. Receive the uploaded document.
-2. Identify the document type.
-3. Extract readable text.
-4. Divide the text into smaller chunks.
-5. Generate embeddings for the chunks.
-6. Store document metadata and chunk content.
-7. Associate chunks with available topics where applicable.
-
-For PDF documents, the application uses the `unpdf` library to extract text and preserve page-related source information where available.
-
-The current implementation does not include OCR for scanned, image-only PDFs. Such documents must contain extractable text to be processed successfully.
-
-#### 7.3 Text Chunking
-
-Large documents are divided into smaller text sections called chunks.
-
-Processing an entire textbook or a lengthy set of notes in one request can be inefficient. Smaller chunks allow the retrieval system to identify the portions most relevant to a particular question.
-
-The chunking helper currently targets approximately 900 characters per chunk, with an overlap of approximately 150 characters.
-
-**Example:**
-
-```text
-Original study material
-          |
-          v
-      Text Chunk 1
-          |
-          v
-      Text Chunk 2
-          |
-          v
-      Text Chunk 3
-```
-
-Overlapping adjacent chunks helps preserve context when an important definition or explanation crosses a chunk boundary.
-
-Each chunk also retains source metadata, allowing the application to identify where retrieved material originated.
-
-#### 7.4 Embedding Generation
-
-An embedding is a numerical representation of text that helps a system compare semantic similarity.
-
-GapFinder AI uses Google's `gemini-embedding-001` model to generate embeddings with an output dimensionality of 768.
-
-For example, the following questions have different wording but may refer to similar concepts:
-
-- What is the purpose of normalization in DBMS?
-- Why do relational databases use normalization?
-
-Semantic embeddings help the retrieval system recognize this conceptual similarity.
-
-The generated vectors are stored in the Supabase database alongside the associated text chunks.
-
-When a student asks a question or the application searches for material related to a topic, the query is embedded and compared with the stored vectors.
-
-#### 7.5 Syllabus Topic Extraction
-
-The topic-generation module analyzes the uploaded syllabus and extracts a structured list of study topics.
-
-The application sends syllabus text to Gemini and requests a structured response containing the identified topics.
-
-The resulting topic records are stored in Supabase. Topic embeddings are then generated so that study-material chunks can be associated with relevant topics.
-
-The application uses the `assign_chunks_to_topics` database function for chunk-to-topic assignment.
-
-The topic map becomes the foundation for diagnostic quizzes, gap analysis, and personalized revision planning.
-
-### 8. Retrieval-Augmented Generation (RAG)
-
-Retrieval-Augmented Generation is one of the central technical components of GapFinder AI.
-
-RAG combines information retrieval with language-model generation. Instead of relying entirely on a model's general knowledge, the application retrieves relevant passages from the student's indexed learning materials and supplies those passages as context for generation.
-
-#### 8.1 Why RAG Is Used
-
-A general-purpose AI model may generate a technically plausible answer that is unrelated to a student's syllabus or unsupported by their notes.
-
-RAG helps address this issue by retrieving material relevant to the student's actual study content.
-
-The main advantages include:
-
-- Greater relevance to uploaded learning material.
-- Support for syllabus-oriented questions.
-- Traceability through source references.
-- Reduced reliance on unsupported, general-purpose generation.
-- A foundation for personalized question generation and explanations.
-
-RAG does not guarantee factual correctness, but it provides a mechanism for grounding generated content in identifiable source material.
-
-#### 8.2 RAG Workflow
-
-```text
-Student Uploads Notes
-          |
-          v
-     Text Extraction
-          |
-          v
-    Text Chunking
-          |
-          v
-  Embedding Generation
-          |
-          v
- Store in Supabase + pgvector
-          |
-          v
-Student Query or Topic
-          |
-          v
-  Query Embedding
-          |
-          v
-  match_chunks Function
-          |
-          v
- Retrieve Relevant Chunks
-          |
-          v
- Pass Context to Gemini
-          |
-          v
- Generate Structured Output
-          |
-          v
- Validate Source References
-          |
-          v
- Display Grounded Result
-```
-
-#### 8.3 Retrieval Process
-
-The retrieval process works as follows:
-
-1. The application receives a topic or question.
-2. It generates an embedding for the query.
-3. The query embedding is passed to the database retrieval function.
-4. The database performs vector similarity search against stored chunk embeddings.
-5. Relevant chunks are returned to the application.
-6. The application supplies the retrieved text to Gemini.
-7. The model generates the requested structured response.
-8. The application validates the returned source references before using them.
-
-The `match_chunks` function performs the vector retrieval operation. It accepts the query embedding, a match count, and an optional topic filter as required by the application.
-
-#### 8.4 Source Validation
-
-Retrieved passages are assigned temporary identifiers, such as `c1` and `c2`, before being included in the generation prompt.
-
-When the model generates a question or explanation, it is expected to reference the relevant retrieved material.
-
-The backend validates these references against the chunks supplied to the model. For quiz generation, questions with invalid source references are discarded.
-
-The application can then display source labels associated with the stored chunks.
-
-This provides traceability between generated educational content and the original study material.
-
-However, validating a source identifier does not prove that every statement is fully supported by the referenced passage. Semantic correctness still requires evaluation.
-
-### 9. Diagnostic Quiz Generation
-
-The diagnostic quiz module evaluates a student's understanding of the topics extracted from their syllabus.
-
-The quiz-generation endpoint is:
-
-`POST /api/quiz/generate`
-
-The workflow is:
-
-1. Retrieve the user's topic map.
-2. Identify topics for which supporting study material is available.
-3. Retrieve relevant note chunks for those topics.
-4. Send the retrieved material to Gemini.
-5. Request structured multiple-choice questions.
-6. Validate question fields, answer options, and source references.
-7. Shuffle the answer-option order and adjust the correct-answer index.
-8. Store the generated quiz and questions in Supabase.
-
-Generated questions are designed to contain four answer options, one correct answer, and an explanation.
-
-The application uses the retrieved study material as the basis for its questions rather than relying exclusively on a generic question bank.
-
-Topics without suitable note material may be skipped during question generation.
-
-#### 9.1 Quiz Submission and Evaluation
-
-After completing the quiz, the student submits their answers.
-
-The submission endpoint is:
-
-`POST /api/quiz/:id/submit`
-
-The backend compares each submitted answer with the stored correct-answer index.
-
-It records the submitted responses and their correctness in the database.
-
-The application can then display the student's results, explanations, and source information.
-
-Because answer correctness is evaluated by application logic against stored answers, the grading calculation does not depend on the language model making a new judgment about every submitted response.
-
-### 10. Learning Gap Detection
-
-Learning gap detection is the central analytical feature of GapFinder AI.
-
-After a student completes a quiz, the application calculates topic-level performance to identify areas requiring further revision.
-
-The gap-classification logic is implemented in `src/lib/gaps.ts`.
-
-#### 10.1 Classification Categories
-
-| Category | Accuracy threshold | Interpretation |
+1. **Sign in:** authenticate through Supabase.
+2. **Upload a syllabus:** select the `syllabus` document type and upload a supported text-based file.
+3. **Generate the topic map:** extract topic names and descriptions from the syllabus.
+4. **Upload notes or past papers:** add source content that can be used to generate questions.
+5. **Generate a diagnostic quiz:** retrieve relevant chunks and generate multiple-choice questions from those excerpts.
+6. **Submit answers:** compare selected answers with the stored correct options and review explanations and source labels.
+7. **Review the gap report:** inspect weak, medium, strong, and untested topics.
+8. **Generate a revision plan:** provide daily study hours and optionally an exam date.
+9. **Ask for an explanation:** ask a question about the uploaded material and inspect the supporting sources.
+10. **Retake weak areas:** complete focused practice and review the recorded attempt scores.
+
+# 5. Functional requirements and features
+
+| Feature | Description | Main implementation location |
 |---|---|---|
-| Strong | 80% or above | The student performed well on the available questions. |
-| Medium | 50% or above but below 80% | The student demonstrates partial understanding and may benefit from revision. |
-| Weak | Below 50% | The student needs additional practice and revision. |
-| Untested | No answered questions for the topic | There is insufficient answer data to evaluate the topic. |
+| Authentication | Login, session-aware server requests, and sign-out | `src/app/login/page.tsx`, `src/lib/supabase/`, `src/middleware.ts` |
+| Document upload | Accepts a syllabus, notes, or past paper; extracts and indexes text | `src/app/api/upload/route.ts`, `src/components/UploadForm.tsx` |
+| Topic map | Generates syllabus-derived topics and links chunks to topics | `src/app/api/topics/generate/route.ts`, `src/components/TopicMapButton.tsx` |
+| Diagnostic quiz | Generates questions from relevant retrieved notes | `src/app/api/quiz/generate/route.ts`, `src/app/quiz/[id]/page.tsx` |
+| Answer submission | Grades selected options and records answer outcomes | `src/app/api/quiz/[id]/submit/route.ts`, `src/components/QuizRunner.tsx` |
+| Gap report | Calculates topic statuses from the latest relevant attempt | `src/lib/gaps.ts`, dashboard in `src/app/page.tsx` |
+| Revision plan | Creates a day-by-day study schedule | `src/app/api/plan/generate/route.ts`, `src/components/PlanForm.tsx` |
+| Explain this topic | Retrieves evidence and returns a cited explanation or refusal | `src/app/api/explain/route.ts`, `src/components/ExplainBox.tsx` |
+| Focused retake | Creates and delivers practice targeting weak/medium topics | `src/app/api/retake/`, `src/app/retake/[id]/page.tsx` |
+| Progress chart | Displays historical quiz-attempt scores | `src/components/ProgressChart.tsx` |
+| Document deletion | Removes a selected uploaded document through a server route | `src/app/api/documents/[id]/route.ts`, `src/components/DeleteDocButton.tsx` |
 
-#### 10.2 Accuracy Calculation
+# 6. Technology stack
 
-Topic accuracy is calculated using the following formula:
+| Layer | Technology | Purpose |
+|---|---|---|
+| Application framework | Next.js 16 App Router | Pages, server-side route handlers, and application routing |
+| Language | TypeScript | Types and safer application code |
+| UI | React 19, Tailwind CSS 4 | Interactive interface and styling |
+| Authentication | Supabase Auth, `@supabase/ssr` | User identity and session-aware server/client access |
+| Database | Supabase PostgreSQL | Persistent application records |
+| Vector search | PostgreSQL `pgvector` | Similarity search over document and topic embeddings |
+| Embeddings | Google Gemini `gemini-embedding-001` | Converts chunks and search queries into vectors; configured output size is 768 dimensions |
+| Text generation | Google Gemini API | Topic extraction, quiz generation, explanation, and plan generation |
+| PDF text extraction | `unpdf` | Extracts text from supported PDFs |
+| Validation | Zod and response-schema validation | Checks generated structured data and request inputs where implemented |
+| Package manager | npm | Dependency installation and scripts |
+| Deployment target | Vercel (demo URL is listed above) | Hosting for the web application |
 
-\[
-\text{Topic Accuracy} =
-\frac{\text{Number of Correct Answers}}
-{\text{Number of Answered Questions}}
-\times 100
-\]
+The repository's `.env.example` currently specifies `gemini-flash-lite-latest` for generation. The application also has a model fallback path. Gemini model availability and quota are provider-controlled and should be checked if generation fails.
 
-**Example:**
+# 7. System architecture
 
-Suppose a student answers 8 questions about operating systems and gets 3 correct.
+## 7.1 Logical architecture
 
-\[
-\text{Accuracy} = \frac{3}{8}\times100=37.5\%
-\]
+```text
+[Browser / React UI]
+        |
+        v
+[Next.js App Router and API handlers]
+        |                         |
+        v                         v
+[Supabase Auth + PostgreSQL]   [Google Gemini API]
+        |
+        v
+[pgvector retrieval functions]
+  - match_chunks
+  - assign_chunks_to_topics
+```
 
-Since the accuracy is below 50%, the topic is classified as weak.
+## 7.2 Architectural responsibilities
 
-This classification indicates that the student should prioritize the topic for further revision.
+- **Browser/UI:** collects user input and displays uploaded documents, topic map, quizzes, results, plans, explanations, retakes, and progress.
+- **Next.js route handlers:** validate requests, resolve the authenticated user, coordinate database operations and model calls, validate generated output, and return responses.
+- **Supabase Auth:** provides the session used by server-side requests.
+- **PostgreSQL:** stores user-scoped documents, chunks, topics, quizzes, questions, answers, and revision plans.
+- **pgvector SQL retrieval:** locates relevant indexed chunks using vector similarity.
+- **Gemini:** creates embeddings and generates structured content from supplied source excerpts.
 
-#### 10.3 Use of Quiz Attempts
+## 7.3 Key design decision
 
-The current gap-analysis implementation searches quiz attempts from newest to oldest and uses the most recent attempt containing answered questions for each topic.
+Retrieval and generation are separated. The database retrieval function returns actual stored chunks. The generation prompt is built from those retrieved chunks and uses temporary source tags. The server checks generated references against the retrieved set before saving or presenting cited content. This is an important provenance safeguard, although it does not prove that every generated sentence is semantically entailed by the referenced chunk.
 
-It also identifies incorrectly answered questions from the selected attempt.
+# 8. End-to-end processing workflow
 
-This allows the application to highlight areas where the student experienced difficulty.
+## 8.1 Ingestion pipeline
 
-The resulting categories should be interpreted as indicators of observed quiz performance rather than definitive proof of mastery. In particular, classifications based on only one or two questions may be unreliable.
+1. The user selects a file, document kind, and optional title.
+2. The server checks authentication and rejects files over 10 MB.
+3. PDF text is extracted page by page using `unpdf`; TXT and Markdown/text files are read as text.
+4. Text is normalized and split into overlapping chunks (approximately 900 characters per chunk with 150 characters of overlap by default).
+5. Each chunk is labelled with its source location where available, such as a PDF page or text part.
+6. The embedding helper calls Gemini in batches of up to 100 texts, requesting 768-dimensional embeddings.
+7. The server stores document metadata and inserts chunk records in batches of 50.
+8. The `assign_chunks_to_topics` database function associates chunks with the closest available topic.
 
-### 11. Personalized Revision Planning
+If ingestion fails after document metadata has been created, the upload handler attempts to remove the incomplete document record. Scanned PDFs without an embedded text layer are not supported because OCR is not implemented.
 
-The revision-planning module converts the gap report into a structured study schedule.
+## 8.2 Topic-map generation
 
-The endpoint is:
+1. The server loads syllabus chunks for the authenticated user.
+2. The combined prompt input is capped at approximately 30,000 characters.
+3. Gemini extracts a list of distinct topics and short descriptions from the syllabus.
+4. The result is normalized and duplicate names are removed.
+5. Topic names/descriptions are embedded and saved.
+6. Existing chunks are assigned to the newly generated topics using vector similarity.
 
-`POST /api/plan/generate`
+**Operational caution:** regenerating the map replaces existing user topics. Depending on database foreign-key delete policies, related quiz or answer history may also be affected. Treat regeneration as a re-indexing operation and verify database deletion behavior before using it on data that must be preserved.
 
-The student can provide the amount of time available for daily study and, optionally, an examination date.
+## 8.3 Diagnostic quiz generation
 
-The application uses the available topic statuses and performance information to determine how study effort should be distributed.
+1. The server loads the user's topic map.
+2. Topic information is embedded and used to retrieve relevant chunks through `match_chunks`.
+3. Syllabus chunks are excluded from question-source material; topics without relevant notes can be skipped.
+4. Gemini receives retrieved excerpts tagged with temporary references and is asked for multiple-choice questions with four options, one correct answer, an explanation, and a source reference.
+5. The server validates field shape, option count, answer index, and source-reference provenance.
+6. Invalid questions and references are rejected; answer options are shuffled and the correct index is updated accordingly.
+7. The quiz and valid questions are persisted in Supabase.
 
-#### 11.1 Revision Prioritization
+## 8.4 Submission and feedback
 
-The current implementation assigns the following relative weights:
+The submission route compares the selected answer index with the stored correct index, records correctness, and returns feedback used by the results UI. A quiz with existing answers cannot be submitted again, and empty answer lists are rejected.
 
-| Topic status | Relative weight |
+## 8.5 Explain-this-topic
+
+The application embeds the learner's question, retrieves relevant chunks, and applies an evidence/coverage check. Up to five selected chunks are supplied to Gemini with instructions to answer only from those excerpts. The route validates returned source references and refuses when the response is unsupported, empty, or lacks a valid citation. A refusal means the indexed material did not provide adequate support; it does not prove that the question has no answer elsewhere.
+
+## 8.6 Focused retake and progress
+
+The retake flow identifies topics currently labelled weak or medium, creates a retake quiz, and generates questions iteratively. The current documented behaviour targets three questions per selected topic and attempts to avoid previously used chunks when fresh alternatives exist. The progress chart shows recorded quiz-attempt scores; it is distinct from the topic report, which chooses the most recent attempt containing answered questions for each topic.
+
+# 9. Retrieval-augmented generation (RAG) design
+
+## 9.1 Pipeline
+
+```text
+Question or topic
+      |
+      v
+Gemini embedding
+      |
+      v
+match_chunks (vector search)
+      |
+      v
+Retrieved chunks + stored source metadata
+      |
+      v
+Prompt with temporary tags: [c1], [c2]
+      |
+      v
+Gemini structured generation
+      |
+      v
+Validate fields and source-tag provenance
+      |
+      v
+Return result with real source labels
+```
+
+## 9.2 Chunking and embeddings
+
+- Default chunk target: approximately 900 characters.
+- Overlap: approximately 150 characters to preserve context across boundaries.
+- Long text pieces may be split further.
+- Embedding model: `gemini-embedding-001`.
+- Configured vector size: 768 dimensions.
+- Database index: HNSW cosine similarity index is described by the current project architecture.
+
+## 9.3 Retrieval and citation safeguards
+
+`match_chunks` performs database-side vector similarity retrieval. The model does not get to invent arbitrary database IDs: it receives temporary tags for the actual chunks returned by retrieval. The handler resolves those tags to real stored chunks and discards references that were not present in the retrieved set. The user-facing source is derived from stored metadata rather than free-form model text.
+
+**Important distinction:** citation validation protects reference provenance. It is not the same as a semantic entailment check, and it cannot guarantee that every generated explanation or question is fully supported by the cited excerpt. Evaluation and human review remain necessary.
+
+# 10. Gap-detection and revision-planning logic
+
+## 10.1 Topic accuracy
+
+For each topic, the gap calculation looks through attempts from newest to oldest and uses the most recent attempt containing answered questions for that topic. It calculates:
+
+`Topic accuracy = Correct answers for the topic / Answered questions for the topic`
+
+## 10.2 Status thresholds
+
+| Status | Accuracy rule | Interpretation |
+|---|---|---|
+| Strong | 80% or higher | The latest relevant attempt indicates comparatively good performance |
+| Medium | 50% or higher but below 80% | The topic may need additional practice |
+| Weak | Below 50% | Prioritize review and targeted practice |
+| Untested | No answered question for the topic | Evidence is not yet available |
+
+A status based on one or two questions is low-confidence. The label is a heuristic for prioritization, not a formal claim about mastery.
+
+## 10.3 Revision-plan weighting
+
+The revision planner allocates study attention using these configured weights:
+
+| Topic status | Weight |
 |---|---:|
-| Weak | 3 |
-| Medium | 2 |
-| Untested | 2 |
+| Weak | 3.0 |
+| Medium | 2.0 |
+| Untested | 2.0 |
 | Strong | 0.5 |
 
-Weak topics receive the greatest relative weight, while strong topics receive less.
+The relative weights favour weak and untested areas while preserving some review time for stronger areas. They are heuristics, not empirically calibrated predictions of how long a student will need.
 
-Untested topics also receive attention because the application does not have enough answer data to establish the student's understanding of them.
+The plan accepts daily study time between 0.5 and 12 hours. The schedule defaults to seven days; an exam date can adjust the horizon, bounded between one and fourteen days. The model receives topic status, missed questions, and topic-linked material to create a concise study focus for each topic/day.
 
-These weights are scheduling heuristics, not measurements of the exact time required to master a topic.
+# 11. Database design
 
-#### 11.2 Plan Generation Workflow
+The following is the logical data model described by the application. It is not a substitute for the exact SQL schema; the repository currently does not include a complete checked-in Supabase migration.
 
-1. Retrieve the student's available quiz results.
-2. Calculate the topic-level gap report.
-3. Determine the requested study duration and scheduling period.
-4. Allocate relative study effort across the topics.
-5. Supply relevant topic information and missed questions to Gemini.
-6. Generate structured topic-specific revision actions.
-7. Store the resulting revision plan in Supabase.
-
-The implementation bounds daily study time between 0.5 and 12 hours. The default planning period is seven days, and an optional examination date can adjust the schedule within the supported range of one to fourteen days.
-
-The final plan helps students prioritize weak concepts while maintaining some revision of stronger topics.
-
-### 12. Explain-This-Topic Assistant
-
-GapFinder AI includes an explanation feature that answers questions using the student's indexed study material.
-
-The endpoint is:
-
-`POST /api/explain`
-
-Unlike an unrestricted chatbot, this feature is designed to ground its explanations in retrieved source material.
-
-#### Workflow
-
-1. Receive the student's question.
-2. Generate an embedding for the question.
-3. Retrieve relevant chunks from the database.
-4. Evaluate whether the retrieved evidence is sufficient.
-5. Send the selected passages to Gemini.
-6. Generate a structured response with source references.
-7. Validate the references.
-8. Return the supported explanation or decline to answer.
-
-The implementation limits the selected context to at most five retrieved chunks and includes a similarity/coverage check before generation.
-
-If the retrieved material does not adequately support an answer, the assistant can refuse to answer rather than inventing an explanation.
-
-A refusal does not necessarily mean the question has no answer. It means the application did not find sufficient supporting evidence in the indexed material.
-
-### 13. Focused Retake System
-
-The retake feature helps students practice topics that need additional attention.
-
-The application identifies topics currently classified as weak or medium and uses them to create a focused retake.
-
-The main endpoints are:
-
-- `POST /api/retake/start`
-- `POST /api/retake/next`
-- `POST /api/retake/answer`
-
-The retake workflow allows the student to begin a new attempt, obtain the next question, and submit an answer.
-
-The implementation targets three questions per selected topic and attempts to avoid reusing previously used source chunks when alternatives are available.
-
-This feature supports a feedback loop in which students can revise difficult concepts, practice again, and track subsequent quiz performance.
-
-### 14. Progress Tracking
-
-GapFinder AI records quiz attempts and provides a progress visualization through its progress-chart component.
-
-Progress tracking helps students review performance over multiple attempts rather than relying solely on a single diagnostic assessment.
-
-The progress chart complements the topic-level gap report:
-
-- **Progress history** shows how quiz-attempt scores change over time.
-- **Gap analysis** identifies the most recent available performance for each topic.
-
-These are related but distinct measurements. An overall quiz score may improve even when some individual topics remain weak.
-
-### 15. Database Design
-
-Supabase PostgreSQL is used to persist the application's information.
-
-The application expects the following tables.
-
-| Table | Purpose |
-|---|---|
-| `documents` | Stores uploaded-document metadata and document type. |
-| `chunks` | Stores extracted text sections, embeddings, source labels, and topic associations. |
-| `topics` | Stores topics extracted from the syllabus and their embeddings. |
-| `quizzes` | Stores quiz and retake records. |
-| `questions` | Stores generated questions, answer options, correct-answer information, explanations, and source relationships. |
-| `answers` | Stores student responses and correctness information. |
-| `plans` | Stores generated revision-plan records. |
-
-#### 15.1 Vector Database Support
-
-The application uses pgvector for semantic search.
-
-The embedding configuration requests 768-dimensional vectors. The database's vector columns and similarity-search implementation must use compatible dimensions.
-
-The system relies on two important database functions:
-
-**`match_chunks`**
-
-Performs similarity-based retrieval over stored text chunks.
-
-**`assign_chunks_to_topics`**
-
-Associates chunks with the available topics using their stored vector representations.
-
-#### 15.2 Database Security
-
-Row Level Security (RLS) is important for protecting student information.
-
-The database policies must ensure that authenticated users can access only the records they are authorized to use. Foreign-key relationships and deletion behavior must also be configured consistently with the application's data model.
-
-The application checks authenticated sessions in protected routes, but authentication alone is not a substitute for correctly configured database authorization.
-
-**Implementation note:** The project repository does not currently include a complete checked-in SQL migration or schema export. The table descriptions above document the application's expected data model; they are not a substitute for the actual database definitions, indexes, constraints, RLS policies, or function signatures.
-
-### 16. API Reference
-
-The following table summarizes the application's principal backend endpoints.
-
-| Method | Endpoint | Function |
+| Table | Purpose | Principal fields referenced by the app |
 |---|---|---|
-| POST | `/api/upload` | Uploads and processes a study document. |
-| POST | `/api/topics/generate` | Extracts topics from uploaded syllabus material. |
-| POST | `/api/quiz/generate` | Generates a diagnostic quiz. |
-| POST | `/api/quiz/:id/submit` | Evaluates and records submitted quiz answers. |
-| POST | `/api/retake/start` | Starts a focused retake. |
-| POST | `/api/retake/next` | Retrieves or generates the next retake question. |
-| POST | `/api/retake/answer` | Records a retake answer. |
-| POST | `/api/plan/generate` | Generates a personalized revision plan. |
-| POST | `/api/explain` | Answers a question using retrieved study material. |
-| DELETE | `/api/documents/:id` | Deletes an owned document. |
+| `documents` | Uploaded file metadata | `id`, `user_id`, `kind`, `title` |
+| `chunks` | Extracted text and embeddings | `id`, `user_id`, `document_id`, `topic_id`, `content`, `section_label`, `page`, `embedding` |
+| `topics` | Syllabus-derived concepts | `id`, `user_id`, `name`, `description`, `position`, `embedding` |
+| `quizzes` | Quiz or retake container | `id`, `user_id`, creation/attempt metadata as used by the app |
+| `questions` | Generated questions | `id`, `quiz_id`, `topic_id`, `chunk_id`, `question`, `options`, `correct_index`, `explanation` |
+| `answers` | Submitted responses | `id`, `question_id`, `user_id`, `selected_index`, `is_correct`, timestamps as used by the app |
+| `plans` | Revision plans | `id`, `user_id`, `exam_date`, `hours_per_day`, `plan` |
 
-These are internal application routes. They are intended to be used with the application's authentication and request-handling flow rather than treated as a separately versioned public API.
+## 11.1 Database functions
 
-### 17. Security and Reliability Considerations
+- **`match_chunks`** accepts a query embedding, a requested result count, and an optional topic filter; it returns retrieved chunks with the metadata needed by the server.
+- **`assign_chunks_to_topics`** links stored chunks to their nearest topic using vector distance/similarity.
 
-The project incorporates several mechanisms intended to improve the reliability and safety of its AI-powered workflow.
+## 11.2 Deployment and data-isolation requirements
 
-**Authentication:** Protected operations check the signed-in user's session.
+A working Supabase environment must contain the expected tables, vector columns with 768 dimensions, pgvector extension, indexes, foreign-key relationships, RPC signatures, and row-level security (RLS) policies. User-owned tables must prevent one user from reading or modifying another user's content. Verify the actual policy and foreign-key configuration in Supabase; table names alone are insufficient to recreate the database.
 
-**Database authorization:** Supabase RLS policies should enforce user-level access restrictions.
+# 12. Application modules and code organization
 
-**Source grounding:** Quiz generation and explanations use retrieved study material.
+| Path | Responsibility |
+|---|---|
+| `src/app/page.tsx` | Main dashboard and study workflow entry point |
+| `src/app/login/page.tsx` | Login page |
+| `src/app/quiz/[id]/page.tsx` | Diagnostic quiz page |
+| `src/app/retake/[id]/page.tsx` | Focused retake page |
+| `src/app/api/upload/route.ts` | Upload, parse, chunk, embed, and store document content |
+| `src/app/api/topics/generate/route.ts` | Extract topics and assign chunks |
+| `src/app/api/quiz/generate/route.ts` | Retrieve sources and generate quiz questions |
+| `src/app/api/quiz/[id]/submit/route.ts` | Validate and store submitted answers |
+| `src/app/api/plan/generate/route.ts` | Build the revision plan |
+| `src/app/api/explain/route.ts` | Evidence-grounded topic explanation |
+| `src/app/api/retake/` | Focused retake orchestration and answer handling |
+| `src/app/api/documents/[id]/route.ts` | Document deletion handler |
+| `src/lib/rag.ts` | Chunking, embedding calls, and structured generation helpers |
+| `src/lib/gaps.ts` | Deterministic gap calculations |
+| `src/lib/supabase/client.ts` | Browser Supabase client |
+| `src/lib/supabase/server.ts` | Server Supabase client with session-aware access |
+| `src/components/` | Upload, topic map, quiz, plan, explanation, retake, deletion, and progress UI components |
 
-**Structured output:** Gemini is asked to return data in the expected JSON format.
+# 13. API reference
 
-**Reference validation:** Generated source references are checked against the retrieved chunks.
+The following route list is based on the current application route structure and the repository's architecture guide. The exact JSON request/response contracts should be checked in each route handler when integrating another client.
 
-**Deterministic grading:** Quiz correctness is calculated against stored correct answers.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/upload` | Upload and index a document; accepts multipart fields such as `file`, `kind`, and optional `title` |
+| POST | `/api/topics/generate` | Generate a topic map from syllabus material |
+| POST | `/api/quiz/generate` | Generate a diagnostic quiz from retrieved topic-related notes |
+| POST | `/api/quiz/:id/submit` | Submit quiz answers, record correctness, and return results |
+| POST | `/api/plan/generate` | Generate a day-by-day revision plan |
+| POST | `/api/explain` | Retrieve evidence and generate a cited explanation or refusal |
+| POST | `/api/retake/start` | Start a focused retake for weak/medium topics |
+| POST | `/api/retake/next` | Resume or generate the next retake question |
+| POST | `/api/retake/answer` | Record a response to the active retake question |
+| DELETE | `/api/documents/:id` | Delete a selected document through the server handler |
 
-**Evidence-based explanations:** The explanation feature can decline questions that are not sufficiently supported by retrieved material.
+Authenticated requests should be exercised through the application session for realistic testing. Each handler should derive the current user from the server-side Supabase session rather than trusting a client-supplied user ID.
 
-These mechanisms reduce certain classes of errors, but they do not eliminate all risks associated with AI generation.
+# 14. Local installation and configuration
 
-Generated questions, explanations, and study recommendations may still contain inaccuracies. The system should therefore be treated as a learning aid rather than an infallible educational authority.
+## 14.1 Prerequisites
 
-API credentials must be stored in environment variables and must not be exposed in client-side code or committed to the repository.
-
-### 18. Installation and Setup
-
-The following steps describe the general process for running the project locally.
-
-#### Prerequisites
-
-- Node.js compatible with the version of Next.js used by the project.
+- A Node.js version supported by the Next.js version pinned in `package.json`.
 - npm.
-- A configured Supabase project.
-- A Google AI API key with access to the required Gemini models.
+- A Supabase project with the required schema, pgvector, SQL functions, and RLS policies.
+- A Google AI API key with access to the configured embedding and generation models.
+- Git.
 
-#### Step 1: Clone the Repository
+## 14.2 Clone and install
 
 ```bash
 git clone https://github.com/Dishagupta275/GapFinder_AI.git
 cd GapFinder_AI
+npm ci
 ```
 
-#### Step 2: Install Dependencies
+Use `npm ci` to install from the checked-in lockfile. Use `npm install` only when intentionally changing dependencies or updating the lockfile.
 
-```bash
-npm install
-```
+## 14.3 Environment variables
 
-#### Step 3: Configure Environment Variables
-
-Create a `.env.local` file in the project root.
+Create a `.env.local` file in the project root using `.env.example` as a template:
 
 ```dotenv
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
@@ -635,154 +397,184 @@ GOOGLE_GENERATIVE_AI_API_KEY=YOUR_GOOGLE_AI_API_KEY
 GEMINI_MODEL=gemini-flash-lite-latest
 ```
 
-Replace the placeholders with the values from your own services.
+Replace every placeholder with the value for your own environment. Do not commit `.env.local`, API keys, database secrets, uploaded study material, or user data. Keep the Google AI key server-side and do not prefix it with `NEXT_PUBLIC_`.
 
-The selected generation model must be available to the configured Google AI API project. Model availability and quotas may change.
-
-Never commit real credentials to GitHub. The Gemini API key must remain server-side.
-
-#### Step 4: Configure Supabase
-
-Configure the required tables, pgvector extension, database functions, indexes, foreign keys, and RLS policies.
-
-The embedding dimensions must match the application's 768-dimensional embedding configuration.
-
-Because the repository does not currently contain a complete database migration, obtain the matching schema from the existing Supabase project or create and validate a migration before setting up a new environment.
-
-#### Step 5: Start the Application
+## 14.4 Start development server
 
 ```bash
 npm run dev
 ```
 
-Open the application at:
+Open <http://localhost:3000> in a browser.
 
-`http://localhost:3000`
-
-#### Step 6: Run Validation Commands
+## 14.5 Quality checks
 
 ```bash
 npm run lint
 npm run build
 ```
 
-These commands help identify linting and production-build problems. They do not replace end-to-end testing against a configured database and AI provider.
+The current `package.json` exposes `dev`, `build`, `start`, and `lint` scripts but does not define a dedicated `test` script. A successful lint or build does not confirm that database-backed flows work end to end; use the smoke-test checklist in Section 17.
 
-### 19. Testing and Validation
+## 14.6 Database setup note
 
-A complete validation process should examine each major stage of the learning workflow.
+The repository does not include a complete SQL migration/schema export. For a fresh environment, create or export a version-controlled migration containing table definitions, vector dimensions, indexes, foreign keys, RPC functions, and RLS policies. Compare its signatures with the code under `src/app/api/` before using the new environment.
 
-| Test area | Expected result |
+# 15. Deployment and demo guidance
+
+The repository README lists the live demo at <https://gap-finder-ai-seven.vercel.app>. The demo account email is `demo@gapfinder.app`; use the sign-in-as-demo option when available rather than sharing or embedding a password in documentation.
+
+For deployment:
+
+1. Configure all required environment variables in the hosting provider.
+2. Ensure the production Supabase project has the expected schema, RPC functions, and RLS policies.
+3. Confirm Gemini model access and quota for the configured account.
+4. Run `npm run lint` and `npm run build` before deployment.
+5. Use a non-sensitive sample syllabus and notes to test the complete flow on the deployed URL.
+6. Verify upload, topic mapping, question generation, submission, gap report, revision plan, explanation, focused retake, chart updates, and document deletion.
+7. Do not preload private documents into a shared demo account.
+
+This document does not certify that the live demo is currently available or that a new deployment has passed these checks; hosting and API availability can change.
+
+# 16. Security, privacy, and reliability
+
+## Authentication and authorization
+
+- Server routes should obtain the authenticated identity from the Supabase session.
+- RLS must be enabled and correctly configured for every user-owned table.
+- Never rely only on hidden UI controls or client-side checks to isolate user data.
+
+## Secrets and configuration
+
+- Keep the Google AI API key in server-side environment configuration.
+- Do not commit `.env.local` or credentials to Git.
+- Avoid printing complete API keys in logs or error reports.
+
+## AI and source trust
+
+- Uploaded text is untrusted input. The prompts instruct the model not to follow instructions embedded in retrieved excerpts.
+- Generated schemas and citation references are validated before use where implemented.
+- Valid citation provenance does not eliminate hallucination or guarantee entailment; educational outputs should be reviewed.
+
+## Destructive operations
+
+- Check foreign-key cascades and dependent-record cleanup before deleting documents or regenerating topics.
+- Test destructive flows with disposable sample data first.
+
+## Shared demo account
+
+The README identifies the demo as shared. Do not upload private, sensitive, proprietary, or personally identifying study documents to it.
+
+# 17. Testing and acceptance criteria
+
+## 17.1 Functional smoke test
+
+- [ ] Sign in and sign out successfully.
+- [ ] Upload a text-based PDF, TXT, or Markdown file smaller than 10 MB.
+- [ ] Confirm the document appears in the dashboard and chunk indexing completes.
+- [ ] Generate a topic map from syllabus content and check that topic names are relevant.
+- [ ] Upload notes containing material for at least two topics.
+- [ ] Generate a quiz and confirm each valid question has four options, one correct answer, an explanation, and a source label.
+- [ ] Submit the quiz and verify grading and feedback.
+- [ ] Compare each topic status with the actual answers and thresholds.
+- [ ] Generate a plan with a small daily time value; test an exam-date case as well.
+- [ ] Ask the explanation assistant about a concept covered in the notes and verify the cited sources.
+- [ ] Ask a question not supported by the notes and verify a refusal rather than an invented answer.
+- [ ] Start and complete a retake targeting weak or medium topics.
+- [ ] Complete multiple attempts and verify progress chart updates.
+- [ ] Delete a disposable test document and verify only the intended data is removed.
+- [ ] Check that a second user cannot access the first user's records.
+
+## 17.2 RAG-specific checks
+
+- Retrieved source IDs passed to the model must come from the actual retrieval result.
+- Invalid or unrecognized source tags must not be displayed as valid citations.
+- Questions should be answerable from their referenced chunk and must stay within the supplied material.
+- Explanation behavior should refuse when evidence is insufficient.
+- Retrieval should be checked for topic relevance, not merely for a non-empty result.
+
+## 17.3 Build and regression checks
+
+Run `npm run lint` and `npm run build` after changes. When changing chunking, vector dimensions, RLS, foreign keys, scoring logic, or API payloads, repeat the related smoke tests. The current project does not provide a dedicated automated test script in `package.json`.
+
+# 18. Limitations and risks
+
+| Limitation or risk | Consequence | Mitigation or next step |
+|---|---|---|
+| No OCR for scanned PDFs | Image-only PDFs may yield no usable text | Add OCR or ask users to upload text-based files |
+| Nearest-topic assignment without a documented minimum similarity cut-off | A chunk can be assigned to a topic even when the match is weak | Add a similarity threshold and an unassigned state |
+| Citation validation verifies reference provenance, not semantic entailment | A cited output can still misinterpret its source | Add evidence checks and human-reviewed evaluations |
+| Few questions per topic | Status estimates can be unstable | Increase questions per topic and expose sample size/confidence |
+| Topic map regeneration can affect dependent data | Re-indexing may remove linked quiz history, depending on foreign keys | Preserve history or confirm cascades before regeneration |
+| Provider model changes, quotas, and transient errors | Generation can fail or become slower | Maintain model fallback, retries, monitoring, and clear user-facing errors |
+| Database DDL not checked in | Recreating the service is harder and can lead to schema drift | Add reviewed SQL migrations and a seed procedure |
+| No dedicated automated test script | Regression detection depends on manual checks and build/lint | Add unit, integration, and retrieval-evaluation tests |
+| Shared demo account | Demo data can be changed by other users | Keep demo data non-sensitive and refresh it as needed |
+
+# 19. Future enhancements
+
+## Retrieval and grounding
+
+- Add hybrid retrieval (vector plus keyword search), reranking, and relevance thresholds.
+- Split content by headings and semantic boundaries rather than character length alone.
+- Add an evaluation set for retrieval quality and question answerability.
+- Consider a semantic entailment verifier for high-value generated content.
+
+## Learning diagnosis
+
+- Add difficulty levels and more questions per topic.
+- Consider sample-size-aware confidence labels and recency-weighted scores across attempts.
+- Track time-to-answer and repeated misconceptions.
+- Recalculate the revision plan automatically after each new attempt.
+
+## Product and accessibility
+
+- Add OCR for scanned PDFs and broader document formats.
+- Add multilingual explanations and more accessible quiz controls.
+- Add reminders or spaced-repetition scheduling.
+- Add teacher/class analytics only with an appropriate role and privacy model.
+
+## Engineering and operations
+
+- Check in SQL migrations and seed/demo setup scripts.
+- Add automated unit tests for chunking, citation validation, and gap calculations.
+- Add integration tests for authenticated end-to-end flows.
+- Add rate limits, per-user upload quotas, and operational logging.
+- Migrate session middleware to the recommended Next.js mechanism when appropriate for the pinned version.
+
+# 20. Conclusion
+
+GapFinder AI turns a student's own study materials into a repeatable learning cycle: ingest content, map topics, test understanding, diagnose weak areas, and prioritize revision. Its central design principle is to retrieve source material before generating content and to validate the source references used by the model. This makes the workflow more traceable than a generic quiz generator, while still requiring careful evaluation of retrieval relevance, generated content, scoring confidence, and database security.
+
+# 21. Appendix
+
+## 21.1 Key terms
+
+| Term | Meaning in this project |
 |---|---|
-| Authentication | A user can sign in and access protected functionality. |
-| Document upload | Supported files are processed and their text chunks are stored. |
-| Topic extraction | Topics are generated from readable syllabus content. |
-| Embeddings | Vectors are stored with compatible dimensions. |
-| Retrieval | Relevant source chunks can be retrieved for a query or topic. |
-| Quiz generation | Valid questions are created from relevant study material. |
-| Quiz submission | Submitted answers are evaluated against stored correct answers. |
-| Gap detection | Topic categories match the calculated performance thresholds. |
-| Revision planning | A plan is generated using the available topic statuses and study-time settings. |
-| Explanation assistant | Supported questions receive cited explanations; unsupported questions can be declined. |
-| Retake workflow | The student can start a retake and answer its questions. |
-| Progress tracking | Recorded attempts appear in the progress visualization. |
-| Data isolation | One user cannot access another user's private records. |
-| Document deletion | Only the intended user's document and associated records are affected. |
+| Chunk | A portion of extracted text stored for retrieval |
+| Embedding | A vector representation used to compare semantic similarity |
+| pgvector | PostgreSQL extension for vector storage and similarity operations |
+| RAG | Retrieval-augmented generation: retrieve evidence before generating an answer |
+| Source reference | An ID/tag linking generated content to an actual retrieved chunk |
+| Topic gap | A heuristic label inferred from the learner's latest relevant quiz attempt |
+| RLS | Row-level security policies that restrict which rows a user can access |
 
-Testing should include normal cases and edge cases, such as empty uploads, missing notes, unsupported file content, insufficient retrieval results, model errors, and topics with very few quiz responses.
+## 21.2 Project references
 
-### 20. Known Limitations
+- Repository: <https://github.com/Dishagupta275/GapFinder_AI>
+- Live demo listed in repository README: <https://gap-finder-ai-seven.vercel.app>
+- Existing README: <https://github.com/Dishagupta275/GapFinder_AI/blob/main/README.md>
+- Architecture guide: <https://github.com/Dishagupta275/GapFinder_AI/blob/main/docs/ARCHITECTURE.md>
+- Development guide: <https://github.com/Dishagupta275/GapFinder_AI/blob/main/docs/DEVELOPMENT.md>
 
-The current implementation has several limitations.
+## 21.3 Items to confirm before formal submission
 
-**1. No OCR for scanned documents**
+These are environment/operations checks, not missing prose in this document:
 
-Scanned PDFs containing only images cannot be processed as ordinary selectable text.
-
-**2. Dependence on AI provider availability**
-
-Generation may fail because of unavailable models, quota restrictions, rate limits, or temporary provider outages.
-
-**3. Retrieval limitations**
-
-Semantic similarity does not guarantee that the retrieved passages contain all the information needed to answer a question.
-
-**4. Topic assignment limitations**
-
-Chunks are associated with their nearest topic, but the current assignment process does not apply a minimum similarity threshold. Some chunks may therefore be associated with only loosely related topics.
-
-**5. Uncertain mastery estimates**
-
-A topic's classification may be unreliable when only a small number of questions have been answered.
-
-**6. No guarantee of semantic correctness**
-
-Valid source references establish traceability but do not independently prove that generated claims are entailed by the cited material.
-
-**7. Database setup requirements**
-
-A complete database migration and schema export are not currently included in the repository, making reproducible database setup more difficult.
-
-**8. Shared demonstration data**
-
-If the demo account is shared with other users, its contents may be modified or deleted. Confidential documents should not be uploaded to a shared account.
-
-### 21. Future Enhancements
-
-The following improvements could extend the project's functionality and reliability.
-
-**1. Automated database migrations**
-
-Add version-controlled SQL migrations for tables, indexes, foreign keys, database functions, and RLS policies.
-
-**2. Improved retrieval quality**
-
-Introduce minimum similarity thresholds, heading-aware chunking, hybrid keyword-and-vector retrieval, or reranking to improve the relevance of retrieved material.
-
-**3. OCR support**
-
-Add optical character recognition to support scanned textbooks and handwritten or image-based notes where appropriate.
-
-**4. Adaptive difficulty**
-
-Generate questions at different difficulty levels and adapt future quizzes based on the student's performance.
-
-**5. Spaced repetition**
-
-Schedule revision sessions according to previous performance and the time elapsed since the student last practiced a topic.
-
-**6. Stronger evaluation**
-
-Develop automated tests for chunking, retrieval, quiz scoring, gap classification, source-reference validation, and database authorization.
-
-**7. Better diagnostic confidence**
-
-Track the number of questions answered per topic and use sample size when communicating confidence in a topic's classification.
-
-**8. Improved progress analytics**
-
-Add topic-level progress comparisons, performance trends, and summaries of repeatedly missed concepts.
-
-**9. Multilingual learning support**
-
-Explore explanations and study-material processing in additional languages, subject to model and retrieval evaluation.
-
-**10. Educator-oriented features**
-
-Explore teacher dashboards and class-level analytics while maintaining strict access controls for student information.
-
-These enhancements are potential future directions, not claims about functionality already implemented.
-
-### 22. Conclusion
-
-GapFinder AI demonstrates how AI-powered generation, semantic retrieval, and performance analysis can be combined to create a personalized study assistant.
-
-By processing a student's own study materials, extracting syllabus topics, generating diagnostic quizzes, and analyzing topic-level results, the application helps students identify areas requiring further attention.
-
-Its RAG-based architecture connects generated educational content to retrieved source material, while Supabase provides authentication and persistent storage. The gap-analysis module translates quiz performance into actionable categories, and the revision-planning module uses those categories to prioritize study effort.
-
-The project brings together modern web development, database-backed application design, vector search, and generative AI in a practical educational use case.
-
-Its broader objective is to make revision more focused, evidence-based, and responsive to each student's learning needs.
-
-**GapFinder AI — Study smarter by finding your learning gaps.**
+- Confirm that the live demo is currently reachable and that its demo sign-in flow works.
+- Confirm successful `npm run lint` and `npm run build` on the version being submitted.
+- Confirm the actual Supabase schema, foreign-key deletion rules, `match_chunks` and `assign_chunks_to_topics` definitions, and RLS policies.
+- Confirm current Google Gemini model availability and quota for the deployed API key.
+- Run the Section 17 end-to-end smoke test using non-sensitive sample data.
+- Record the actual deployment URL and the date of final verification if the document is submitted for assessment.
