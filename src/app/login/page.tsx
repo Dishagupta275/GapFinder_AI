@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const DEMO_EMAIL = "demo@gapfinder.app";
-const DEMO_PASSWORD ="12345678"
+const DEMO_PASSWORD = "12345678";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -28,59 +29,98 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-sm bg-white rounded-xl shadow p-6 space-y-4">
-        <h1 className="text-2xl font-bold">GapFinder AI</h1>
-        <p className="text-sm text-gray-600">Find what you don&apos;t know you don&apos;t know.</p>
-
-        <div className="rounded border border-blue-200 bg-blue-50 p-3 space-y-2">
-          <p className="text-sm font-medium">Demo account (preloaded with sample material)</p>
-          <p className="text-xs text-gray-700">
-            Email: {DEMO_EMAIL}
-            <br />
-            Password: {DEMO_PASSWORD}
+    <main className="login-page">
+      <section className="login-showcase">
+        <div>
+          <div className="brand-lockup">
+            <div className="brand-mark" aria-hidden="true">G</div>
+            <div>
+              <p className="brand-name">GapFinder AI</p>
+              <p className="brand-subtitle" style={{ color: "#c7d2fe" }}>Your personal study workspace</p>
+            </div>
+          </div>
+          <p className="hero-eyebrow" style={{ color: "#c7d2fe", marginTop: 46 }}>Study with intention</p>
+          <h1 className="login-showcase-title">Know what to learn next.</h1>
+          <p className="login-showcase-copy">
+            Turn your own syllabus and notes into a topic map, a clear picture of your learning gaps,
+            and a revision plan that helps you spend your time where it matters.
           </p>
-          <button
-            disabled={loading}
-            onClick={() => submit("in", DEMO_EMAIL, DEMO_PASSWORD)}
-            className="w-full bg-blue-600 text-white rounded py-2 text-sm disabled:opacity-50"
-          >
-            Sign in as demo
-          </button>
+          <div className="login-feature-list">
+            <div className="login-feature"><span className="login-feature-dot" aria-hidden="true">✓</span><span>Quizzes grounded in your study material</span></div>
+            <div className="login-feature"><span className="login-feature-dot" aria-hidden="true">✓</span><span>Topic-level insights and progress tracking</span></div>
+            <div className="login-feature"><span className="login-feature-dot" aria-hidden="true">✓</span><span>Personalised revision with cited explanations</span></div>
+          </div>
         </div>
+        <p className="small-copy" style={{ color: "#c7d2fe" }}>Find what you don't know you don't know.</p>
+      </section>
 
-        <input
-          className="w-full border rounded px-3 py-2"
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          className="w-full border rounded px-3 py-2"
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <div className="flex gap-2">
-          <button
-            disabled={loading}
-            onClick={() => submit("in")}
-            className="flex-1 bg-black text-white rounded py-2 disabled:opacity-50"
-          >
-            Sign in
-          </button>
-          <button
-            disabled={loading}
-            onClick={() => submit("up")}
-            className="flex-1 border rounded py-2 disabled:opacity-50"
-          >
-            Sign up
-          </button>
+      <section className="login-form-side">
+        <div className="login-card">
+          <p className="section-kicker">Welcome to GapFinder AI</p>
+          <h2 className="login-card-title">Let's get studying.</h2>
+          <p className="login-card-copy">Sign in to continue to your learning dashboard, or create an account to get started.</p>
+
+          <div className="demo-box">
+            <p className="demo-box-title">Explore with the demo account</p>
+            <p className="demo-box-copy">
+              This account includes sample study material, so you can explore the learning workflow.
+              Avoid uploading private or sensitive documents to the shared demo.
+            </p>
+            <button
+              disabled={loading}
+              onClick={() => submit("in", DEMO_EMAIL, DEMO_PASSWORD)}
+              className="btn btn-secondary w-full"
+              type="button"
+            >
+              {loading ? "Signing in…" : "Sign in as demo"}
+            </button>
+          </div>
+
+          <div className="login-fields">
+            <label className="field">
+              <span className="field-label">Email address</span>
+              <input
+                className="form-control"
+                placeholder="you@example.com"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span className="field-label">Password</span>
+              <input
+                className="form-control"
+                placeholder="Enter your password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="login-actions">
+            <button
+              disabled={loading}
+              onClick={() => submit("in")}
+              className="btn btn-primary"
+              type="button"
+            >
+              Sign in
+            </button>
+            <button
+              disabled={loading}
+              onClick={() => submit("up")}
+              className="btn btn-secondary"
+              type="button"
+            >
+              Create account
+            </button>
+          </div>
+          {msg && <p aria-live="polite" className="login-message">{msg}</p>}
         </div>
-        {msg && <p className="text-sm text-red-600">{msg}</p>}
-      </div>
+      </section>
     </main>
   );
 }
