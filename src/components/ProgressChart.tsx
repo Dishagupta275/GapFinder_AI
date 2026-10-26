@@ -28,22 +28,22 @@ export default function ProgressChart({ attempts }: { attempts: Attempt[] }) {
     >
       {[0, 50, 100].map((g) => (
         <g key={g}>
-          <line x1={L} x2={W - R} y1={y(g)} y2={y(g)} stroke="#e5e7eb" strokeWidth="1" />
-          <text x={L - 6} y={y(g) + 3} textAnchor="end" fontSize="9" fill="#6b7280">
+          <line x1={L} x2={W - R} y1={y(g)} y2={y(g)} stroke="#e6e1d7" strokeWidth="1" />
+          <text x={L - 6} y={y(g) + 3} textAnchor="end" fontSize="9" fill="#858579">
             {g}%
           </text>
         </g>
       ))}
       {pts.length > 1 && (
-        <path d={line} fill="none" stroke="#4f46e5" strokeWidth="2" strokeLinejoin="round" />
+        <path d={line} fill="none" stroke="#426552" strokeWidth="2" strokeLinejoin="round" />
       )}
       {pts.map((p, i) => (
         <g key={i}>
-          <circle cx={x(i)} cy={y(p.pct)} r="4" fill="#4f46e5" />
-          <text x={x(i)} y={y(p.pct) - 8} textAnchor="middle" fontSize="9" fill="#29334a">
+          <circle cx={x(i)} cy={y(p.pct)} r="4" fill="#426552" />
+          <text x={x(i)} y={y(p.pct) - 8} textAnchor="middle" fontSize="9" fill="#303a30">
             {p.pct}%
           </text>
-          <text x={x(i)} y={H - 8} textAnchor="middle" fontSize="9" fill="#6b7280">
+          <text x={x(i)} y={H - 8} textAnchor="middle" fontSize="9" fill="#858579">
             #{i + 1} ({p.label})
           </text>
         </g>
