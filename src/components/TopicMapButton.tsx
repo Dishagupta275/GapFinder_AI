@@ -19,15 +19,11 @@ export default function TopicMapButton({ hasTopics }: { hasTopics: boolean }) {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <button
-        onClick={run}
-        disabled={loading}
-        className="bg-black text-white rounded px-4 py-2 text-sm disabled:opacity-50"
-      >
-        {loading ? "Working..." : hasTopics ? "Regenerate topic map" : "Generate topic map"}
+    <div className="section-content">
+      <button onClick={run} disabled={loading} className="btn btn-primary" type="button">
+        {loading ? "Building topic map…" : hasTopics ? "Regenerate topic map" : "Generate topic map"}
       </button>
-      {status && <span className="text-sm text-gray-700">{status}</span>}
+      {status && <span aria-live="polite" className={`status-message ${status.startsWith("Error:") ? "status-error" : "status-success"}`}>{status}</span>}
     </div>
   );
 }
