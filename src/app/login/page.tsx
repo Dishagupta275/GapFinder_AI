@@ -4,8 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const DEMO_EMAIL = "demo@gapfinder.app";
-const DEMO_PASSWORD = "PUT-YOUR-DEMO-PASSWORD-HERE";
-
+const DEMO_PASSWORD ="12345678"
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
