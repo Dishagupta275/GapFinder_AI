@@ -15,18 +15,26 @@ export default function ExplainBox({ disabled }: { disabled?: boolean }) {
     setLoading(true);
     setErr("");
     setRes(null);
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 50000);
     try {
       const r = await fetch("/api/explain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q }),
+        signal: ctrl.signal,
       });
       const j = await r.json();
       if (!r.ok) setErr(j.error ?? "Something went wrong.");
       else setRes(j);
-    } catch {
-      setErr("Network error. Try again.");
+    } catch (e) {
+      setErr(
+        (e as Error).name === "AbortError"
+          ? "This took too long. The AI model is slow right now, try again."
+          : "Network error. Try again."
+      );
     }
+    clearTimeout(timer);
     setLoading(false);
   }
 

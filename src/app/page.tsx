@@ -6,12 +6,19 @@ import StartQuizButton from "@/components/StartQuizButton";
 import PlanForm from "@/components/PlanForm";
 import DeleteDocButton from "@/components/DeleteDocButton";
 import ExplainBox from "@/components/ExplainBox";
+import ProgressChart from "@/components/ProgressChart";
 
 const badge: Record<string, string> = {
   weak: "bg-red-100 text-red-800",
   medium: "bg-amber-100 text-amber-800",
   strong: "bg-green-100 text-green-800",
   untested: "bg-gray-100 text-gray-700",
+};
+const bar: Record<string, string> = {
+  weak: "bg-red-500",
+  medium: "bg-amber-500",
+  strong: "bg-green-500",
+  untested: "bg-gray-300",
 };
 const order: Record<string, number> = { weak: 0, medium: 1, untested: 2, strong: 3 };
 
@@ -122,12 +129,24 @@ export default async function Home() {
                       {g.status}
                     </span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2 rounded bg-gray-100 overflow-hidden">
+                      <div
+                        className={`h-full ${bar[g.status]}`}
+                        style={{ width: `${g.total ? Math.round((g.correct / g.total) * 100) : 0}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-500 w-10 text-right">
+                      {g.total ? `${Math.round((g.correct / g.total) * 100)}%` : "n/a"}
+                    </span>
+                  </div>
                   <p className="text-gray-600">{g.reason}</p>
                 </li>
               ))}
             </ul>
             <div className="pt-2">
               <h3 className="text-sm font-semibold mb-1">Progress across attempts</h3>
+              <ProgressChart attempts={attempts} />
               <ul className="text-sm text-gray-600">
                 {attempts.map((a, i) => (
                   <li key={a.quizId}>

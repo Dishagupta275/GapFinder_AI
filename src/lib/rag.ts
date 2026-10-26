@@ -90,19 +90,23 @@ const FALLBACKS = ["gemini-flash-latest", "gemini-flash-lite-latest"];
 
 export async function generateJSON<T>(
   prompt: string,
-  schema: Record<string, unknown>
+  schema: Record<string, unknown>,
+  budgetMs = 45000
 ): Promise<T> {
   const models = Array.from(new Set([GEN_MODEL, ...FALLBACKS]));
   let lastErr = "Generation failed";
+  const deadline = Date.now() + budgetMs;
 
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
+      const left = deadline - Date.now();
+      if (left < 3000) throw new Error(lastErr + " (timed out)");
       try {
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
           {
             method: "POST",
-            signal: AbortSignal.timeout(20000),
+            signal: AbortSignal.timeout(Math.min(20000, left)),
             headers: {
               "Content-Type": "application/json",
               "x-goog-api-key": process.env.GOOGLE_GENERATIVE_AI_API_KEY!,

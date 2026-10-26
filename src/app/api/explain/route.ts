@@ -19,6 +19,12 @@ const MIN_SIMILARITY = 0.45;
 const REFUSAL =
   "I couldn't find this in your uploaded notes, so I won't guess. Try rephrasing, or upload notes that cover it.";
 
+const STOP = new Set([
+  "what", "which", "explain", "does", "how", "why", "the", "and", "are", "is",
+  "of", "in", "to", "for", "about", "tell", "me", "with", "this", "that",
+  "define", "difference", "between",
+]);
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -60,6 +66,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ answered: false, answer: REFUSAL, sources: [] });
   }
 
+  // Fast off-topic guard when match_chunks gives no similarity score:
+  // at least one meaningful word from the question must appear in the retrieved text.
+  if (typeof top.similarity !== "number") {
+    const words =
+      question
+        .toLowerCase()
+        .match(/[a-z0-9]{3,}/g)
+        ?.filter((w) => !STOP.has(w)) ?? [];
+    const text = hits.slice(0, 5).map((h) => h.content.toLowerCase()).join(" ");
+    if (words.length && !words.some((w) => text.includes(w))) {
+      return NextResponse.json({ answered: false, answer: REFUSAL, sources: [] });
+    }
+  }
+
   const use = hits
     .filter((h) => typeof h.similarity !== "number" || h.similarity >= MIN_SIMILARITY)
     .slice(0, 5);
@@ -87,15 +107,19 @@ ${material}`;
 
   let out: Gen;
   try {
-    out = await generateJSON<Gen>(prompt, {
-      type: "OBJECT",
-      properties: {
-        answerable: { type: "BOOLEAN" },
-        answer: { type: "STRING" },
-        chunk_refs: { type: "ARRAY", items: { type: "STRING" } },
+    out = await generateJSON<Gen>(
+      prompt,
+      {
+        type: "OBJECT",
+        properties: {
+          answerable: { type: "BOOLEAN" },
+          answer: { type: "STRING" },
+          chunk_refs: { type: "ARRAY", items: { type: "STRING" } },
+        },
+        required: ["answerable", "answer", "chunk_refs"],
       },
-      required: ["answerable", "answer", "chunk_refs"],
-    });
+      40000
+    );
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
