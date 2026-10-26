@@ -32,20 +32,23 @@ export default async function Home() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: docs } = await supabase
-    .from("documents")
-    .select("id,title,kind,created_at,chunks(count)")
-    .order("created_at", { ascending: false });
-  const { data: topics } = await supabase
-    .from("topics")
-    .select("id,name,description,chunks(count)")
-    .order("position");
-  const { gaps, attempts } = await computeGaps(supabase);
-  const { data: plans } = await supabase
-    .from("plans")
-    .select("plan,exam_date,hours_per_day,created_at")
-    .order("created_at", { ascending: false })
-    .limit(1);
+   const [{ data: docs }, { data: topics }, { gaps, attempts }, { data: plans }] =
+    await Promise.all([
+      supabase
+        .from("documents")
+        .select("id,title,kind,created_at,chunks(count)")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("topics")
+        .select("id,name,description,chunks(count)")
+        .order("position"),
+      computeGaps(supabase),
+      supabase
+        .from("plans")
+        .select("plan,exam_date,hours_per_day,created_at")
+        .order("created_at", { ascending: false })
+        .limit(1),
+    ]);
   const plan = plans?.[0]?.plan as { days: PlanDay[] } | undefined;
 
   const count = (rel: unknown) => (rel as { count: number }[])?.[0]?.count ?? 0;
