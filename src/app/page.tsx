@@ -5,6 +5,7 @@ import TopicMapButton from "@/components/TopicMapButton";
 import StartQuizButton from "@/components/StartQuizButton";
 import PlanForm from "@/components/PlanForm";
 import DeleteDocButton from "@/components/DeleteDocButton";
+import ExplainBox from "@/components/ExplainBox";
 
 const badge: Record<string, string> = {
   weak: "bg-red-100 text-red-800",
@@ -87,6 +88,15 @@ export default async function Home() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="bg-white rounded-xl shadow p-5 space-y-3">
+        <h2 className="font-semibold">Explain this topic</h2>
+        <p className="text-sm text-gray-600">
+          Ask about any concept. Answers come only from your uploaded notes, with sources.
+          If your notes don&apos;t cover it, it says so.
+        </p>
+        <ExplainBox disabled={!docs?.length} />
       </section>
 
       <section className="bg-white rounded-xl shadow p-5 space-y-3">
