@@ -56,15 +56,14 @@ export default function LoginPage() {
 
       <section className="login-form-side">
         <div className="login-card">
-          <p className="section-kicker">Welcome to GapFinder AI</p>
-          <h2 className="login-card-title">Let&apos;s get studying.</h2>
-          <p className="login-card-copy">Sign in to continue to your learning dashboard, or create an account to get started.</p>
+          <p className="section-kicker">Your next study session starts here</p>
+          <h2 className="login-card-title">Find your next step.</h2>
+          <p className="login-card-copy">Step inside your study workspace. The demo is the quickest way to explore the full learning journey without setting up an account.</p>
 
           <div className="demo-box">
-            <p className="demo-box-title">Explore with the demo account</p>
+            <p className="demo-box-title">Start with the demo workspace</p>
             <p className="demo-box-copy">
-              This account includes sample study material, so you can explore the learning workflow.
-              Avoid uploading private or sensitive documents to the shared demo.
+              Explore the learning flow with sample material already in place: topic mapping, diagnostic practice, explanations, insights, and revision planning. Please do not upload private or sensitive documents to the shared demo.
             </p>
             <button
               disabled={loading}
@@ -72,7 +71,7 @@ export default function LoginPage() {
               className="btn btn-secondary w-full"
               type="button"
             >
-              {loading ? "Signing in…" : "Sign in as demo"}
+              {loading ? "Opening your workspace…" : "Explore the demo workspace"}
             </button>
           </div>
 
