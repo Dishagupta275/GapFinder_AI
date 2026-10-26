@@ -25,36 +25,36 @@ export default function PlanForm({ disabled }: { disabled: boolean }) {
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-3 text-sm">
-      <label className="space-y-1">
-        <span className="block text-gray-600">Hours per day</span>
-        <input
-          type="number"
-          min="0.5"
-          max="12"
-          step="0.5"
-          value={hours}
-          onChange={(e) => setHours(e.target.value)}
-          className="border rounded px-3 py-2 w-28"
-        />
-      </label>
-      <label className="space-y-1">
-        <span className="block text-gray-600">Exam date (optional)</span>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border rounded px-3 py-2"
-        />
-      </label>
-      <button
-        onClick={run}
-        disabled={disabled || loading}
-        className="bg-black text-white rounded px-4 py-2 disabled:opacity-50"
-      >
-        {loading ? "Working..." : "Generate revision plan"}
-      </button>
-      {status && <span className="text-gray-700">{status}</span>}
+    <div className="form-stack">
+      <div className="form-grid">
+        <label className="field">
+          <span className="field-label">Study hours per day</span>
+          <input
+            type="number"
+            min="0.5"
+            max="12"
+            step="0.5"
+            value={hours}
+            onChange={(e) => setHours(e.target.value)}
+            className="form-control"
+          />
+        </label>
+        <label className="field">
+          <span className="field-label">Exam date <span className="muted">(optional)</span></span>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="form-control"
+          />
+        </label>
+      </div>
+      <div className="form-actions">
+        <button onClick={run} disabled={disabled || loading} className="btn btn-primary" type="button">
+          {loading ? "Creating your plan…" : "Generate revision plan"}
+        </button>
+        {status && <span aria-live="polite" className={`status-message ${status.startsWith("Error:") ? "status-error" : status === "Plan ready." ? "status-success" : ""}`}>{status}</span>}
+      </div>
     </div>
   );
 }

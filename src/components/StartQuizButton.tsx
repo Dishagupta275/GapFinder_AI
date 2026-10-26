@@ -38,24 +38,28 @@ export default function StartQuizButton({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <button
-        onClick={() => run(false)}
-        disabled={disabled || loading}
-        className="bg-black text-white rounded px-4 py-2 text-sm disabled:opacity-50"
-      >
-        {loading ? "Working..." : "Start diagnostic quiz"}
-      </button>
-      {weakCount > 0 && (
+    <div className="form-stack">
+      <div className="form-actions">
         <button
-          onClick={() => run(true)}
+          onClick={() => run(false)}
           disabled={disabled || loading}
-          className="border border-black rounded px-4 py-2 text-sm disabled:opacity-50"
+          className="btn btn-primary"
+          type="button"
         >
-          Retake on weak topics ({weakCount})
+          {loading ? "Preparing quiz…" : "Start diagnostic quiz"}
         </button>
-      )}
-      {status && <span className="text-sm text-gray-700">{status}</span>}
+        {weakCount > 0 && (
+          <button
+            onClick={() => run(true)}
+            disabled={disabled || loading}
+            className="btn btn-secondary"
+            type="button"
+          >
+            Focused retake <span className="status-pill weak">{weakCount} topics</span>
+          </button>
+        )}
+      </div>
+      {status && <p aria-live="polite" className={`status-message ${status.startsWith("Error:") || status.startsWith("Network") ? "status-error" : ""}`}>{status}</p>}
     </div>
   );
 }

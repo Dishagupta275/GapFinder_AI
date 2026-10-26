@@ -35,12 +35,12 @@ export default function ProgressChart({ attempts }: { attempts: Attempt[] }) {
         </g>
       ))}
       {pts.length > 1 && (
-        <path d={line} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinejoin="round" />
+        <path d={line} fill="none" stroke="#4f46e5" strokeWidth="2" strokeLinejoin="round" />
       )}
       {pts.map((p, i) => (
         <g key={i}>
-          <circle cx={x(i)} cy={y(p.pct)} r="4" fill="#2563eb" />
-          <text x={x(i)} y={y(p.pct) - 8} textAnchor="middle" fontSize="9" fill="#111827">
+          <circle cx={x(i)} cy={y(p.pct)} r="4" fill="#4f46e5" />
+          <text x={x(i)} y={y(p.pct) - 8} textAnchor="middle" fontSize="9" fill="#29334a">
             {p.pct}%
           </text>
           <text x={x(i)} y={H - 8} textAnchor="middle" fontSize="9" fill="#6b7280">

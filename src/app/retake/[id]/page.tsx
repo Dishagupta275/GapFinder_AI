@@ -22,12 +22,14 @@ export default async function RetakePage({
   if (!topicIds.length) redirect("/");
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-5">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Retake on weak topics</h1>
-        <Link href="/" className="text-sm underline">
-          Back to home
-        </Link>
+    <main className="page-shell">
+      <Link href="/" className="page-back-link"><span aria-hidden="true">←</span> Back to dashboard</Link>
+      <header className="page-intro">
+        <p className="section-kicker">Practice with purpose</p>
+        <h1 className="page-title">Retake on weak topics</h1>
+        <p className="page-description">
+          Work through a focused set of questions based on the topics that need more attention. Review the feedback and sources after every answer.
+        </p>
       </header>
       <RetakeRunner quizId={id} topicIds={topicIds} />
     </main>

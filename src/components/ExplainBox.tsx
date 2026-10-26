@@ -39,11 +39,12 @@ export default function ExplainBox({ disabled }: { disabled?: boolean }) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-2">
+    <div className="assistant-box">
+      <div className="assistant-input-row">
         <input
-          className="flex-1 border rounded px-3 py-2 text-sm"
+          className="form-control"
           placeholder="e.g. Explain Strict 2PL, or What is BCNF?"
+          aria-label="Topic or question to explain"
           value={q}
           maxLength={500}
           disabled={disabled}
@@ -53,30 +54,26 @@ export default function ExplainBox({ disabled }: { disabled?: boolean }) {
         <button
           onClick={ask}
           disabled={disabled || loading || !q.trim()}
-          className="bg-black text-white rounded px-4 py-2 text-sm disabled:opacity-50"
+          className="btn btn-primary"
+          type="button"
         >
-          {loading ? "Thinking..." : "Explain"}
+          {loading ? "Thinking…" : "Explain"}
         </button>
       </div>
 
-      {err && <p className="text-sm text-red-600">{err}</p>}
+      {loading && <p className="status-message" aria-live="polite">Searching your notes and preparing an explanation…</p>}
+      {err && <p role="alert" className="status-message status-error">{err}</p>}
 
       {res && (
-        <div
-          className={`rounded border p-3 space-y-2 text-sm ${
-            res.answered ? "bg-gray-50" : "bg-amber-50 border-amber-200"
-          }`}
-        >
-          <p className="whitespace-pre-wrap">{res.answer}</p>
+        <div className={`answer-panel ${res.answered ? "" : "unsupported"}`}>
+          <p className="whitespace-pre-wrap m-0">{res.answer}</p>
           {res.sources.length > 0 && (
-            <div className="pt-2 border-t space-y-1">
-              <p className="text-xs font-semibold text-gray-600">Sources</p>
+            <div className="source-list">
+              <p className="field-label">Sources from your material</p>
               {res.sources.map((s) => (
-                <details key={s.n} className="text-xs text-gray-600">
-                  <summary className="cursor-pointer">
-                    [{s.n}] {s.label}
-                  </summary>
-                  <p className="mt-1 pl-3 text-gray-500">{s.snippet}</p>
+                <details key={s.n} className="source-detail">
+                  <summary>[{s.n}] {s.label}</summary>
+                  <p className="source-snippet">{s.snippet}</p>
                 </details>
               ))}
             </div>

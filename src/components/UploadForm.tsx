@@ -24,26 +24,34 @@ export default function UploadForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 bg-white rounded-xl shadow p-5">
-      <h2 className="font-semibold">Upload material</h2>
-      <select name="kind" className="w-full border rounded px-3 py-2" defaultValue="syllabus">
-        <option value="syllabus">Syllabus</option>
-        <option value="notes">Notes / textbook chapter</option>
-        <option value="past_paper">Past question paper</option>
-      </select>
-      <input
-        name="title"
-        placeholder="Title (e.g. DBMS Syllabus)"
-        className="w-full border rounded px-3 py-2"
-        required
-      />
+    <form onSubmit={onSubmit} className="form-stack">
+      <label className="field">
+        <span className="field-label">Material type</span>
+        <select name="kind" className="form-control" defaultValue="syllabus">
+          <option value="syllabus">Syllabus</option>
+          <option value="notes">Notes / textbook chapter</option>
+          <option value="past_paper">Past question paper</option>
+        </select>
+      </label>
 
-      <div className="flex items-center gap-3">
-        <label
-          htmlFor="file-input"
-          className="cursor-pointer border border-black rounded px-4 py-2 text-sm font-medium hover:bg-gray-100"
-        >
-          Choose file
+      <label className="field">
+        <span className="field-label">Document title</span>
+        <input
+          name="title"
+          placeholder="e.g. DBMS Syllabus"
+          className="form-control"
+          required
+        />
+      </label>
+
+      <div className="upload-dropzone">
+        <div className="upload-icon" aria-hidden="true">↑</div>
+        <div className="upload-copy">
+          <div className="upload-file-name">{fileName || "Choose a study file"}</div>
+          <div className="upload-file-hint">PDF, TXT or Markdown · maximum 10 MB</div>
+        </div>
+        <label htmlFor="file-input" className="btn btn-secondary">
+          Browse files
         </label>
         <input
           id="file-input"
@@ -54,18 +62,19 @@ export default function UploadForm() {
           required
           onChange={(e) => setFileName(e.target.files?.[0]?.name ?? "")}
         />
-        <span className="text-sm text-gray-600 truncate">
-          {fileName || "No file chosen (PDF, TXT or MD)"}
-        </span>
       </div>
 
-      <button
-        disabled={loading}
-        className="bg-black text-white rounded px-4 py-2 disabled:opacity-50"
-      >
-        {loading ? "Processing..." : "Upload"}
-      </button>
-      {status && <p className="text-sm text-gray-700">{status}</p>}
+      <div className="form-actions">
+        <button disabled={loading} className="btn btn-primary" type="submit">
+          {loading ? "Processing material…" : "Upload material"}
+        </button>
+        <span className="small-copy">Text is extracted and indexed for source-grounded study.</span>
+      </div>
+      {status && (
+        <p aria-live="polite" className={`status-message ${status.startsWith("Error:") ? "status-error" : status.startsWith("Done:") ? "status-success" : ""}`}>
+          {status}
+        </p>
+      )}
     </form>
   );
 }

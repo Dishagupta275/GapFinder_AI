@@ -100,7 +100,6 @@ export default function RetakeRunner({
       setSessionAnswers((s) => s + 1);
       const a = answered + 1;
       setAnswered(a);
-      // load the next question in the background while the student reads the feedback
       if (a < total) fetchNext().then((n) => n && setUpcoming(n));
     } catch {
       setErr("Network error. Try again.");
@@ -126,95 +125,108 @@ export default function RetakeRunner({
 
   if (done)
     return (
-      <div className="bg-white rounded-xl shadow p-5 space-y-2">
-        <p className="text-lg font-semibold">Retake complete</p>
+      <section className="quiz-card">
+        <div className="stat-icon green" aria-hidden="true">✓</div>
+        <p className="section-kicker mt-4">Focused practice complete</p>
+        <h2 className="page-title">Good work showing up.</h2>
         {sessionAnswers > 0 && (
-          <p className="text-sm">
-            You got {score} of {sessionAnswers} right this session.
-          </p>
+          <p className="page-description">You got {score} of {sessionAnswers} right this session ({Math.round((score / sessionAnswers) * 100)}%).</p>
         )}
-        <Link href="/" className="text-sm underline">
-          See your updated gap report
-        </Link>
-      </div>
+        <div className="hero-actions">
+          <Link href="/" className="btn btn-primary">See updated gap report</Link>
+        </div>
+      </section>
     );
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <p className="text-sm text-gray-600">
-          Question {Math.min(answered + (fb ? 0 : 1), total)} of {total}
-        </p>
-        <div className="h-2 rounded bg-gray-100 overflow-hidden">
-          <div
-            className="h-full bg-black transition-all"
-            style={{ width: `${total ? (answered / total) * 100 : 0}%` }}
-          />
+    <div className="quiz-stack">
+      <section className="retake-status-card">
+        <div className="quiz-footer">
+          <span className="quiz-progress-copy">Question {Math.min(answered + (fb ? 0 : 1), total)} of {total}</span>
+          <span className="small-copy">{answered} completed</span>
         </div>
-      </div>
+        <div className="progress-track" role="progressbar" aria-label="Retake progress" aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered}>
+          <div className="progress-fill strong" style={{ width: `${total ? (answered / total) * 100 : 0}%` }} />
+        </div>
+      </section>
 
       {!cur && !err && (
-        <div className="bg-white rounded-xl shadow p-5 text-sm text-gray-600 animate-pulse">
-          Writing your first question from your notes...
+        <div className="quiz-card" aria-live="polite">
+          <p className="section-kicker">Preparing your practice</p>
+          <p className="page-description">Finding a relevant note excerpt and writing your first question…</p>
         </div>
       )}
 
       {cur && (
-        <div className="bg-white rounded-xl shadow p-5 space-y-3">
-          <p className="text-xs text-gray-500">{cur.topic}</p>
-          <p className="font-medium">{cur.question}</p>
-          <div className="space-y-2">
+        <article className="quiz-card">
+          <div className="quiz-card-head">
+            <div>
+              <p className="quiz-number">Focused retake</p>
+              {cur.topic && <span className="quiz-topic">{cur.topic}</span>}
+            </div>
+            {fb && <span className={`status-pill ${fb.correct ? "strong" : "weak"}`}>{fb.correct ? "Correct" : "Review"}</span>}
+          </div>
+          <p className="quiz-question">{cur.question}</p>
+          <div className="option-list">
             {cur.options.map((opt, oi) => {
-              let style = "border hover:bg-gray-50";
+              let style = "option-card";
               if (fb) {
-                if (oi === fb.correct_index) style = "border-green-600 bg-green-50";
-                else if (oi === sel) style = "border-red-600 bg-red-50";
-                else style = "border opacity-60";
+                if (oi === fb.correct_index) style += " is-correct";
+                else if (oi === sel) style += " is-incorrect";
+                else style += " is-locked";
+              } else if (sel === oi) {
+                style += " is-selected";
               }
               return (
                 <button
                   key={oi}
                   onClick={() => pick(oi)}
                   disabled={!!fb || busy}
-                  className={`w-full text-left rounded px-3 py-2 text-sm ${style}`}
+                  className={style}
+                  type="button"
                 >
-                  {opt}
+                  <span className="option-letter" aria-hidden="true">{String.fromCharCode(65 + oi)}</span>
+                  <span>{opt}</span>
                 </button>
               );
             })}
           </div>
           {fb && (
-            <div className="text-sm space-y-1">
-              <p className={fb.correct ? "text-green-700" : "text-red-700"}>
-                {fb.correct ? "Correct." : "Incorrect."} {fb.explanation}
-              </p>
-              <p className="text-gray-500">Source: {fb.citation}</p>
+            <div className={`feedback-panel ${fb.correct ? "correct" : "incorrect"}`}>
+              <p className="font-bold m-0">{fb.correct ? "Correct answer" : "Let's review this one"}</p>
+              <p className="m-0 mt-1">{fb.explanation}</p>
+              <p className="source-label mt-2">Source: {fb.citation || cur.citation}</p>
             </div>
           )}
-        </div>
+          {busy && <p className="status-message" aria-live="polite">Saving your answer…</p>}
+        </article>
       )}
 
       {fb && (
-        <button
-          onClick={goNext}
-          disabled={answered < total && !upcoming}
-          className="bg-black text-white rounded px-5 py-2 text-sm disabled:opacity-50"
-        >
-          {answered >= total
-            ? "Finish"
-            : upcoming
-            ? "Next question"
-            : fetching
-            ? "Loading next question..."
-            : "Next question"}
-        </button>
+        <div className="quiz-footer">
+          <span className="quiz-progress-copy">Score this session: {score}/{sessionAnswers}</span>
+          <button
+            onClick={goNext}
+            disabled={answered < total && !upcoming}
+            className="btn btn-primary"
+            type="button"
+          >
+            {answered >= total
+              ? "Finish retake"
+              : upcoming
+              ? "Next question"
+              : fetching
+              ? "Loading next question…"
+              : "Next question"}
+          </button>
+        </div>
       )}
 
       {err && (
-        <div className="text-sm text-red-600 space-y-1">
-          <p>{err}</p>
+        <div className="feedback-panel incorrect" role="alert">
+          <p className="m-0">{err}</p>
           {!fetching && (!cur || (fb && !upcoming && answered < total)) && (
-            <button onClick={retry} className="underline">
+            <button onClick={retry} className="btn btn-secondary mt-3" type="button">
               Try again
             </button>
           )}
