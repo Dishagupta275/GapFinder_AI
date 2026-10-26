@@ -45,10 +45,16 @@ export default function LoginPage() {
             Turn your own syllabus and notes into a topic map, a clear picture of your learning gaps,
             and a revision plan that helps you spend your time where it matters.
           </p>
-          <div className="login-feature-list">
-            <div className="login-feature"><span className="login-feature-dot" aria-hidden="true">✓</span><span>Quizzes grounded in your study material</span></div>
-            <div className="login-feature"><span className="login-feature-dot" aria-hidden="true">✓</span><span>Topic-level insights and progress tracking</span></div>
-            <div className="login-feature"><span className="login-feature-dot" aria-hidden="true">✓</span><span>Personalised revision with cited explanations</span></div>
+          <div className="login-product-preview" aria-label="How GapFinder works">
+            <p className="login-preview-label">FROM NOTES TO KNOW-HOW</p>
+            <div className="login-flow-line">
+              <div className="login-flow-node"><span>01</span><strong>Bring your notes</strong><small>Your own syllabus and material</small></div>
+              <div className="login-flow-arrow" aria-hidden="true">↓</div>
+              <div className="login-flow-node"><span>02</span><strong>Find the gaps</strong><small>Check what has really clicked</small></div>
+              <div className="login-flow-arrow" aria-hidden="true">↓</div>
+              <div className="login-flow-node login-flow-node-highlight"><span>03</span><strong>Know your next step</strong><small>Practise, understand, and revise</small></div>
+            </div>
+            <p className="login-preview-foot"><span aria-hidden="true">✳</span> Built to help you decide what to learn next.</p>
           </div>
         </div>
         <p className="small-copy" style={{ color: "#c7d2fe" }}>Find what you don&apos;t know you don&apos;t know.</p>
@@ -63,12 +69,12 @@ export default function LoginPage() {
           <div className="demo-box">
             <p className="demo-box-title">Start with the demo workspace</p>
             <p className="demo-box-copy">
-              Explore the learning flow with sample material already in place: topic mapping, diagnostic practice, explanations, insights, and revision planning. Please do not upload private or sensitive documents to the shared demo.
+              The fastest way to explore: open the sample study workspace, try a diagnostic, check a source-backed explanation, and see how results guide revision. Please do not upload private or sensitive documents to the shared demo.
             </p>
             <button
               disabled={loading}
               onClick={() => submit("in", DEMO_EMAIL, DEMO_PASSWORD)}
-              className="btn btn-secondary w-full"
+              className="btn btn-primary login-demo-button w-full"
               type="button"
             >
               {loading ? "Opening your workspace…" : "Explore the demo workspace"}
