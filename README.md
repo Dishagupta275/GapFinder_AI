@@ -16,10 +16,11 @@ GapFinder AI takes a student's own material, tests them on it, shows exactly whe
 1. **Upload** a syllabus, notes or past papers (PDF, TXT or MD).
 2. **Topic map:** the syllabus is turned into topics, and every note chunk is linked to its nearest topic.
 3. **Diagnostic quiz:** multiple-choice questions generated from the student's notes, each with a source citation.
-4. **Gap report:** each topic is classified as weak, medium, strong or untested, with the questions that were missed.
+4. **Gap report:** each topic is classified as weak, medium, strong or untested, with a score bar and the questions that were missed.
 5. **Revision plan:** a day-by-day plan that prioritises weak topics, with sources for each session.
 6. **Explain this topic:** ask any question and get an answer drawn only from the uploaded notes, with citations. It refuses when the notes don't cover the question.
-7. **Progress across attempts** so improvement is visible after retakes.
+7. **Progress across attempts:** a chart of quiz scores so improvement is visible after retakes.
+8. **Retake on weak topics:** a focused quiz built only from topics that are weak or medium, with more questions per topic.
 
 ## Architecture
 
@@ -38,7 +39,7 @@ flowchart LR
 | Database | Supabase Postgres + pgvector, row-level security per user |
 | Auth | Supabase Auth via `@supabase/ssr` |
 | Embeddings | `gemini-embedding-001`, truncated to 768 dimensions |
-| Generation | Gemini via REST, with retries and model fallback |
+| Generation | Gemini via REST, with retries, a time budget and model fallback |
 | PDF parsing | `unpdf` |
 | Hosting | Vercel |
 
@@ -71,9 +72,10 @@ flowchart TD
 |---|---|---|
 | Topic map | Proposes topics from the syllabus | Chunks are assigned by vector similarity in SQL |
 | Quiz | Writes 4-option questions from retrieved excerpts | Exactly 4 options, one correct, valid chunk ref, options shuffled server-side |
-| Gap report | None (plain code, `computeGaps`) | Status computed from per-topic scores |
+| Answer evaluation | Each question carries an explanation of why the right answer is right and what the tempting wrong choice gets wrong | Explanation is generated from the cited excerpt and shown after answering |
+| Gap report | None (plain code, `computeGaps`) | Status computed from per-topic scores: 80%+ strong, 50%+ medium, else weak |
 | Plan | Writes a focus line per topic from that topic's own material | Rules forbid mixing in other topics; sources are listed per session |
-| Explain | Answers from at most 5 retrieved chunks | Refuses when similarity is low, when the model says the excerpts don't cover it, or when no valid citation remains |
+| Explain | Answers from at most 5 retrieved chunks | Refuses when similarity is low, when no question word appears in the retrieved text, when the model says the excerpts don't cover it, or when no valid citation remains |
 
 Retrieved material is treated as data, not instructions. The generation prompts tell the model to ignore commands inside the excerpts.
 
@@ -104,20 +106,31 @@ The Supabase project needs the `pgvector` extension, the tables (`documents`, `t
 - Regenerating the topic map deletes the old topics, and with them their questions and answers.
 - The demo account is shared, so its data can be changed by anyone using it.
 - Model names are set by environment variable because Google retires and overloads models. Generation can be slow on larger models, so the lite model is the default.
+- The app can feel slow on the free Vercel tier because of cold starts and the distance between the server and the database.
+
+## Future enhancements
+
+- Class-level analytics for teachers
+- Spaced-repetition reminders
+- OCR for scanned PDFs
+- Multi-subject and multi-language support
+- Tighter chunk-to-topic assignment with a minimum similarity cutoff
 
 ## Project structure
 
 ```
 src/
   app/
-    page.tsx                  home: upload, topics, quiz, gaps, plan, explain
+    page.tsx                  home: upload, topics, explain, quiz, gaps, plan
+    loading.tsx               skeleton shown while the home page loads
     login/page.tsx
     quiz/[id]/page.tsx
     api/
       upload/  topics/generate/  quiz/generate/  quiz/[id]/submit/
       plan/generate/  explain/  documents/[id]/
   components/                 UploadForm, TopicMapButton, StartQuizButton,
-                              QuizRunner, PlanForm, ExplainBox, DeleteDocButton
+                              QuizRunner, PlanForm, ExplainBox, ProgressChart,
+                              DeleteDocButton
   lib/
     rag.ts                    chunking, embeddings, generateJSON
     gaps.ts                   computeGaps

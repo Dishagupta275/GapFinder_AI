@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { embedTexts, generateJSON } from "@/lib/rag";
+import { computeGaps } from "@/lib/gaps";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -17,20 +18,36 @@ type Gen = {
   }[];
 };
 
-export async function POST() {
+export async function POST(req: Request) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: topics } = await supabase
+  const { data: allTopics } = await supabase
     .from("topics")
     .select("id,name,description")
     .order("position")
     .limit(20);
-  if (!topics?.length)
+  if (!allTopics?.length)
     return NextResponse.json({ error: "Generate the topic map first." }, { status: 400 });
+
+  const reqBody = await req.json().catch(() => ({}));
+  const weakOnly = reqBody?.weakOnly === true;
+  let topics = allTopics;
+  if (weakOnly) {
+    const { gaps } = await computeGaps(supabase);
+    const ids = new Set(
+      gaps.filter((g) => g.status === "weak" || g.status === "medium").map((g) => g.id)
+    );
+    topics = allTopics.filter((t) => ids.has(t.id));
+    if (!topics.length)
+      return NextResponse.json(
+        { error: "No weak or medium topics yet. Take the diagnostic quiz first." },
+        { status: 400 }
+      );
+  }
 
   // ---- RETRIEVAL: best chunks per topic from the student's own material ----
   let embs: number[][];
@@ -60,7 +77,7 @@ export async function POST() {
     const hits = (results[i].data ?? []) as Hit[];
     const notes = hits.filter((h) => h.kind !== "syllabus");
     if (!notes.length) return; // no notes for this topic: skip it
-    const use = notes.slice(0, 3);
+        const use = notes.slice(0, weakOnly ? 5 : 3);
     const lines = use.map((h) => {
       const ref = `c${++k}`;
       ctx.push({ ref, chunkId: h.id, topicId: t.id });
@@ -75,7 +92,9 @@ export async function POST() {
     );
 
   // ---- GENERATION: model only sees retrieved text ----
-  const perTopic = Math.min(3, Math.max(1, Math.floor(20 / blocks.length)));
+    const perTopic = weakOnly
+    ? Math.min(5, Math.max(2, Math.floor(20 / blocks.length)))
+    : Math.min(3, Math.max(1, Math.floor(20 / blocks.length))); Math.min(3, Math.max(1, Math.floor(20 / blocks.length)));
   const quizPrompt = `You write diagnostic quiz questions for a student using ONLY the study material below.
 Rules:
 - For each TOPIC write up to ${perTopic} multiple-choice questions.

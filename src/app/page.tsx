@@ -53,7 +53,7 @@ export default async function Home() {
 
   const count = (rel: unknown) => (rel as { count: number }[])?.[0]?.count ?? 0;
   const sortedGaps = [...gaps].sort((a, b) => order[a.status] - order[b.status]);
-
+    const weakCount = gaps.filter((g) => g.status === "weak" || g.status === "medium").length;
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-6">
       <header className="flex items-center justify-between">
@@ -114,7 +114,7 @@ export default async function Home() {
         <p className="text-sm text-gray-600">
           Questions are built from your own notes, each with a source citation.
         </p>
-        <StartQuizButton disabled={!topics?.length} />
+        <StartQuizButton disabled={!topics?.length} weakCount={weakCount} />
       </section>
 
       <section className="bg-white rounded-xl shadow p-5 space-y-3">

@@ -91,7 +91,8 @@ const FALLBACKS = ["gemini-flash-latest", "gemini-flash-lite-latest"];
 export async function generateJSON<T>(
   prompt: string,
   schema: Record<string, unknown>,
-  budgetMs = 45000
+  budgetMs = 45000,
+  callTimeoutMs = 20000
 ): Promise<T> {
   const models = Array.from(new Set([GEN_MODEL, ...FALLBACKS]));
   let lastErr = "Generation failed";
@@ -130,7 +131,7 @@ export async function generateJSON<T>(
         }
         const body = await res.text();
         lastErr = `Generation failed (${model}): ${res.status} ${body.slice(0, 200)}`;
-        if (res.status === 404 || res.status === 400) break; // try the next model
+        if (res.status === 404 || res.status === 400 || res.status === 429) break; // try the next model
         await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       } catch (e) {
         lastErr = (e as Error).message;
