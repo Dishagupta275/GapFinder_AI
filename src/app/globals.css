@@ -302,7 +302,7 @@ a { color: var(--primary); }
 .quiz-topic { display: inline-flex; margin-top: 7px; padding: 4px 8px; border-radius: 8px; background: #eef2ff; color: #4f46e5; font-size: 0.7rem; font-weight: 750; }
 .quiz-question { margin: 0; color: #1f293d; font-size: 1.03rem; font-weight: 750; line-height: 1.65; }
 .option-list { display: grid; gap: 9px; margin-top: 18px; }
-.option-card { display: flex; align-items: flex-start; gap: 11px; padding: 13px 14px; border: 1px solid #dfe4ee; border-radius: 13px; background: #fff; cursor: pointer; color: #465168; font-size: 0.86rem; line-height: 1.6; }
+.option-card { display: flex; width: 100%; text-align: left; align-items: flex-start; gap: 11px; padding: 13px 14px; border: 1px solid #dfe4ee; border-radius: 13px; background: #fff; cursor: pointer; color: #465168; font-size: 0.86rem; line-height: 1.6; }
 .option-card:hover:not(.is-locked) { border-color: #a5b4fc; background: #f8faff; }
 .option-card.is-selected { border-color: #818cf8; background: #eef2ff; color: #312e81; box-shadow: 0 0 0 2px rgba(99,102,241,0.08); }
 .option-card.is-correct { border-color: #86efac; background: #f0fdf4; color: #166534; }
